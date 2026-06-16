@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>СТУДИЯ — портфолио (прототип сцены)</title>
+<meta name="description" content="Прототип scroll-сцены портфолио: HERO → Soberi Party" />
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+<style>
+  :root{
+    /* chain link colours */
+    --hero-bg:    #ece2d0;   /* warm bone — старт и конец цепочки */
+    --hero-bg-2:  #e3d6bf;
+    --soberi-fill:#f6e7e6;   /* блаш-крем Soberi */
+    --soberi-glow:#f0d3d8;
+
+    --ink:    #1b1714;
+    --ink-2:  #5c534a;
+    --garnet: #9e2b45;       /* фирменный акцент портфолио */
+    --line:   rgba(27,23,20,.14);
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html{ scroll-behavior:auto; }
+  body{
+    font-family:"Hanken Grotesk", system-ui, sans-serif;
+    color:var(--ink);
+    background:var(--hero-bg);
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  ::selection{ background:var(--garnet); color:#fff; }
+
+  /* ---------- grain / atmosphere ---------- */
+  .grain{
+    position:fixed; inset:0; z-index:60; pointer-events:none; opacity:.05;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* ---------- top bar ---------- */
+  .bar{
+    position:fixed; top:0; left:0; right:0; z-index:40;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:22px clamp(20px,5vw,64px);
+    mix-blend-mode:difference; color:#fff;
+  }
+  .brand{ font-family:"Bricolage Grotesque"; font-weight:800; font-size:19px; letter-spacing:-.02em; }
+  .brand .ph{ opacity:.55; }
+  .bar nav{ display:flex; gap:26px; font-size:13px; letter-spacing:.04em; text-transform:uppercase; }
+  .bar nav a{ color:inherit; text-decoration:none; opacity:.8; }
+  @media(max-width:680px){ .bar nav{ display:none; } }
+
+  /* DEV-панель выбора анимации (временная — потом удалим) */
+  .dev-panel{
+    position:fixed; top:60px; left:clamp(20px,5vw,64px); z-index:80;
+    display:flex; align-items:center; gap:8px;
+    background:rgba(27,23,20,.92); color:#f4e9d8; padding:8px 10px; border-radius:12px;
+    font-family:"JetBrains Mono"; font-size:11px; letter-spacing:.08em;
+    box-shadow:0 12px 30px -12px rgba(0,0,0,.5);
+  }
+  .dev-panel .dev-label{ opacity:.6; text-transform:uppercase; }
+  .dev-panel button{
+    font-family:"JetBrains Mono"; font-size:12px; color:#f4e9d8;
+    background:transparent; border:1px solid rgba(244,233,216,.25); border-radius:8px;
+    width:28px; height:28px; cursor:pointer; transition:all .2s;
+  }
+  .dev-panel button:hover{ border-color:rgba(244,233,216,.6); }
+  .dev-panel button.active{ background:var(--garnet); border-color:var(--garnet); color:#fff; }
+
+  /* ---------- HERO ---------- */
+  .hero{
+    position:relative; min-height:100dvh;
+    display:grid; grid-template-columns:1.15fr .85fr; align-items:center;
+    padding:0 clamp(20px,5vw,64px);
+    background:
+      radial-gradient(120% 90% at 85% 15%, var(--hero-bg-2), transparent 60%),
+      var(--hero-bg);
+    overflow:hidden;
+  }
+  .hero::after{ /* нижняя кромка втекает в блаш Soberi — намёк на цепочку */
+    content:""; position:absolute; left:0; right:0; bottom:0; height:34vh; pointer-events:none;
+    background:linear-gradient(to bottom, transparent, var(--soberi-fill));
+    opacity:.5;
+  }
+  .hero-copy{ position:relative; z-index:2; max-width:680px; }
+  .eyebrow{
+    font-family:"JetBrains Mono"; font-size:12px; letter-spacing:.22em; text-transform:uppercase;
+    color:var(--garnet); margin-bottom:26px; display:flex; align-items:center; gap:12px;
+  }
+  .eyebrow::before{ content:""; width:34px; height:1px; background:var(--garnet); display:inline-block; }
+  .hero h1{
+    font-family:"Bricolage Grotesque"; font-weight:800;
+    font-size:clamp(44px,7vw,104px); line-height:.92; letter-spacing:-.035em;
+  }
+  .hero h1 em{ font-style:normal; color:var(--garnet); }
+  .hero p.lead{
+    margin-top:28px; font-size:clamp(16px,1.5vw,20px); line-height:1.6; max-width:46ch; color:var(--ink-2);
+  }
+  .hero .price{
+    margin-top:14px; font-family:"JetBrains Mono"; font-size:14px; letter-spacing:.02em; color:var(--ink);
+  }
+  .cta-row{ margin-top:38px; display:flex; gap:14px; flex-wrap:wrap; }
+  .btn{
+    display:inline-flex; align-items:center; gap:10px;
+    font-family:"Hanken Grotesk"; font-weight:600; font-size:15px;
+    padding:15px 26px; border-radius:999px; text-decoration:none; cursor:pointer;
+    border:1px solid transparent; transition:transform .25s cubic-bezier(.16,1,.3,1), background .25s, color .25s;
+  }
+  .btn:active{ transform:translateY(1px) scale(.98); }
+  .btn-primary{ background:var(--ink); color:var(--hero-bg); }
+  .btn-primary:hover{ background:var(--garnet); color:#fff; }
+  .btn-ghost{ border-color:var(--line); color:var(--ink); }
+  .btn-ghost:hover{ border-color:var(--ink); }
+
+  .hero-aside{ position:relative; z-index:1; height:100%; }
+  .hero-mark{ /* крупный декоративный знак-шифр */
+    position:absolute; right:-2vw; top:50%; transform:translateY(-50%);
+    font-family:"Bricolage Grotesque"; font-weight:800; font-size:34vh; line-height:.8;
+    color:var(--ink); opacity:.05; letter-spacing:-.05em; user-select:none;
+  }
+  @media(max-width:880px){
+    .hero{ grid-template-columns:1fr; }
+    .hero-aside{ display:none; }
+  }
+
+  .scroll-hint{
+    position:absolute; left:clamp(20px,5vw,64px); bottom:30px; z-index:3;
+    font-family:"JetBrains Mono"; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--ink-2);
+    display:flex; align-items:center; gap:10px;
+  }
+  .scroll-hint .dot{ width:7px; height:7px; border-radius:50%; background:var(--garnet); animation:bob 1.6s ease-in-out infinite; }
+  @keyframes bob{ 0%,100%{ transform:translateY(0); opacity:1 } 50%{ transform:translateY(5px); opacity:.4 } }
+
+  /* ---------- SHOWCASE SCENE ---------- */
+  .scene{ position:relative; height:100dvh; }
+  .stage{
+    position:absolute; inset:0; overflow:hidden;
+    display:flex; align-items:center; justify-content:center;
+    background:                                   /* база сцены = HERO-фон (для цепочки) */
+      radial-gradient(110% 80% at 50% 10%, var(--hero-bg-2), transparent 55%),
+      var(--hero-bg);
+    perspective:1700px;
+  }
+  /* заливка фоном кейса, раскрывается из центра карточки */
+  .fill{
+    position:absolute; inset:0; z-index:1; will-change:clip-path;
+    clip-path:circle(0% at 50% 50%);
+    background:
+      radial-gradient(60% 50% at 50% 42%, var(--soberi-glow), transparent 70%),
+      var(--soberi-fill);
+  }
+  .scene-label{
+    position:absolute; top:26px; left:0; right:0; z-index:3; text-align:center;
+    font-family:"JetBrains Mono"; font-size:12px; letter-spacing:.22em; text-transform:uppercase; color:var(--ink-2);
+  }
+
+  .card-wrap{ position:relative; z-index:5; display:flex; align-items:center; justify-content:center; }
+
+  /* крупное имя кейса фоном — 4 строки с нарастающей непрозрачностью (25→50→75→100) */
+  .case-title{
+    position:absolute; inset:0; z-index:2; pointer-events:none; overflow:hidden;
+    display:flex; flex-direction:column; align-items:stretch; justify-content:space-between;
+    padding:4vh 0;
+    font-family:"Bricolage Grotesque"; font-weight:800; text-transform:uppercase;
+    line-height:.9; color:var(--ink);
+  }
+  /* строка = флекс-ряд букв, распределённых по ширине до краёв-лимитов */
+  .case-title span{
+    display:flex; width:100%; justify-content:space-between;
+    padding:0 clamp(20px,6vw,130px);
+    font-size:clamp(40px,14vw,230px); opacity:var(--o);
+    visibility:hidden; will-change:transform,opacity;
+  }
+  .case-title span i{ font-style:normal; display:block; }
+  .case-title span i.sp{ width:2.5vw; }   /* пробел между словами */
+
+  /* точка-логотип кейса, из неё вырастает карточка */
+  .dot{
+    position:absolute; left:50%; top:50%;
+    z-index:3; width:40px; height:40px; border-radius:50%;
+    background:radial-gradient(circle at 50% 34%, #2c1f1a, #120f0d);
+    display:flex; align-items:center; justify-content:center;
+    color:#f4e9d8; font-family:"Bricolage Grotesque"; font-weight:800; font-size:16px;
+    box-shadow:0 10px 26px -8px rgba(0,0,0,.55), 0 0 0 1px rgba(244,233,216,.18), 0 0 0 5px rgba(158,43,69,.12);
+    opacity:0; will-change:transform,opacity;
+  }
+
+  /* внешняя 2D-обёртка: scale / y / opacity (НЕ 3D — чтобы не плющить грани) */
+  .card-scale{
+    position:relative; z-index:2; width:min(560px,84vw); aspect-ratio:16/10;   /* выше плашки */
+    perspective:1700px;
+    transform:scale(.09);   /* стартовое состояние — совсем маленькая, появляется сверху */
+    opacity:0; will-change:transform,opacity;
+  }
+  /* слой 3D-наклона за курсором (включается после интро, не конфликтует с GSAP) */
+  .card-tilt{
+    position:relative; width:100%; height:100%;
+    transform-style:preserve-3d; transform:rotateX(0deg) rotateY(0deg);
+    transition:transform .18s ease;
+  }
+  /* внутренний 3D-слой: только кувырки rotateX/rotateZ */
+  .card-3d{
+    position:relative; width:100%; height:100%;
+    transform-style:preserve-3d; will-change:transform;
+  }
+  /* плавающий 3D-слой НАД карточкой: родные подписи, приподнятые и кренящиеся вместе с картой */
+  .card-float{
+    position:absolute; inset:0; z-index:3; pointer-events:none;
+    transform-style:preserve-3d; opacity:0;
+  }
+  .face{
+    position:absolute; inset:0; backface-visibility:hidden; -webkit-backface-visibility:hidden;
+    border-radius:18px; overflow:hidden;
+    background:#fff;
+    box-shadow:0 40px 80px -30px rgba(27,23,20,.5), 0 0 0 1px rgba(27,23,20,.06);
+  }
+  .face img{ width:100%; height:100%; object-fit:cover; display:block; }
+
+  /* задняя сторона — тёмная, брендовая */
+  .face.back{
+    transform:rotateX(180deg);   /* рубашка под ось кувырка X (фикс «без рубашки») */
+    background:
+      radial-gradient(130% 110% at 50% 0%, #2b1e19, transparent 65%),
+      linear-gradient(160deg, #181210, #120f14);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .back-inner{
+    position:relative; width:100%; height:100%;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px;
+    color:#f4e9d8;
+  }
+  .back-inner::before{ /* двойная рамка */
+    content:""; position:absolute; inset:14px; border:1px solid rgba(244,233,216,.16); border-radius:12px;
+  }
+  .back-inner::after{
+    content:""; position:absolute; inset:20px; border:1px solid rgba(244,233,216,.07); border-radius:9px;
+  }
+  .back-tag{
+    font-family:"JetBrains Mono"; font-size:11px; letter-spacing:.34em; text-transform:uppercase; color:#cf6b82;
+  }
+  .back-mark{
+    font-family:"Bricolage Grotesque"; font-weight:800; font-size:clamp(34px,6vw,58px);
+    letter-spacing:-.03em; line-height:1; position:relative;
+  }
+  .back-mark::after{ content:""; display:inline-block; width:9px; height:9px; border-radius:50%; background:#cf6b82; margin-left:6px; vertical-align:middle; }
+  .back-sub{
+    font-family:"JetBrains Mono"; font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:rgba(244,233,216,.5);
+  }
+  /* подпись на карточке */
+  .card-cap{
+    position:absolute; left:0; right:0; bottom:0; z-index:2;
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    padding:14px 18px;
+    color:var(--ink);            /* тёмный текст, без тёмного градиента */
+    transform:translateZ(16px);  /* приподнята над поверхностью */
+  }
+  .card-cap b{ font-family:"Bricolage Grotesque"; font-weight:600; font-size:15px; }
+  .card-cap span{ font-family:"JetBrains Mono"; font-size:11px; letter-spacing:.08em; opacity:.7; }
+  .badge{
+    position:absolute; top:14px; left:14px; z-index:2;
+    font-family:"JetBrains Mono"; font-size:10px; letter-spacing:.1em; text-transform:uppercase;
+    background:var(--garnet); color:#fff; padding:6px 11px; border-radius:999px;
+    transform:translateZ(32px);   /* выше всех — сильнее отрывается */
+    box-shadow:0 14px 26px -8px rgba(0,0,0,.4);
+  }
+
+  /* плашка «Перейти на сайт» — выезжает сверху вниз */
+  .go-plate{
+    position:absolute; z-index:1; left:50%; top:50%;   /* z НИЖЕ карточки => прячется под ней */
+    transform:translate(-50%,150px); opacity:0;
+    will-change:transform,opacity;
+  }
+  .go-plate a{
+    display:inline-flex; align-items:center; gap:12px;
+    font-family:"Hanken Grotesk"; font-weight:600; font-size:16px;
+    color:#fff; text-decoration:none;
+    background:var(--ink); padding:16px 30px; border-radius:999px;
+    box-shadow:0 24px 50px -18px rgba(27,23,20,.6);
+  }
+  .go-plate a:hover{ background:var(--garnet); }
+  .go-plate svg{ width:18px; height:18px; }
+
+  /* ---------- outro (заглушка под след. сцену / прайс) ---------- */
+  .outro{
+    min-height:80vh; background:var(--soberi-fill);
+    display:flex; align-items:center; justify-content:center; text-align:center; padding:60px 20px;
+  }
+  .outro div{ max-width:540px; }
+  .outro h2{ font-family:"Bricolage Grotesque"; font-weight:800; font-size:clamp(28px,4vw,46px); letter-spacing:-.03em; line-height:1; }
+  .outro p{ margin-top:16px; color:var(--ink-2); font-size:16px; line-height:1.6; }
+  .outro .tag{ font-family:"JetBrains Mono"; font-size:12px; letter-spacing:.2em; text-transform:uppercase; color:var(--garnet); margin-bottom:18px; }
+
+  /* плавающая TG-кнопка (плейсхолдер) */
+  .tg-fab{
+    position:fixed; right:22px; bottom:22px; z-index:50;
+    width:54px; height:54px; border-radius:50%;
+    background:var(--garnet); color:#fff; display:flex; align-items:center; justify-content:center;
+    box-shadow:0 14px 30px -10px rgba(158,43,69,.7); text-decoration:none;
+    transition:transform .25s cubic-bezier(.16,1,.3,1);
+  }
+  .tg-fab:hover{ transform:translateY(-3px) scale(1.05); }
+  .tg-fab svg{ width:26px; height:26px; }
+
+  @media(prefers-reduced-motion:reduce){
+    .dot{ animation:none; }
+  }
+</style>
+</head>
+<body>
+  <div class="grain"></div>
+
+  <header class="bar">
+    <div class="brand"><span class="ph">[</span>СТУДИЯ<span class="ph">]</span></div>
+    <nav>
+      <a href="#work">Работы</a>
+      <a href="#price">Прайс</a>
+      <a href="#contact">Контакты</a>
+    </nav>
+  </header>
+
+  <!-- DEV: переключатель вариантов анимации (временный, потом удалим) -->
+  <div class="dev-panel">
+    <span class="dev-label">анимация</span>
+    <button data-variant="1" class="active">1</button>
+    <button data-variant="2">2</button>
+  </div>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-copy">
+      <div class="eyebrow">Веб-студия · сайты для бизнеса</div>
+      <h1>Сайты,<br>которые <em>работают</em><br>на вас.</h1>
+      <p class="lead">Делаем быстрые, живые сайты под малый бизнес — от лендинга до многостраничника. Запуск за&nbsp;3–5&nbsp;дней.</p>
+      <p class="price">Лендинг — от 30к · Сайт-визитка — от 40к</p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="#contact">Обсудить проект →</a>
+        <a class="btn btn-ghost" href="#work">Смотреть работы</a>
+      </div>
+    </div>
+    <div class="hero-aside"><div class="hero-mark">S</div></div>
+    <div class="scroll-hint"><span class="dot"></span> Листайте вниз</div>
+  </section>
+
+  <!-- SCENE 1 — Soberi -->
+  <section class="scene" id="work">
+    <div class="stage">
+      <div class="fill"></div>
+      <div class="case-title" aria-hidden="true">
+        <span data-o="1"   style="--o:1">Soberi Party</span>
+        <span data-o="0.75" style="--o:.75">Soberi Party</span>
+        <span data-o="0.5"  style="--o:.5">Soberi Party</span>
+        <span data-o="0.25" style="--o:.25">Soberi Party</span>
+      </div>
+      <div class="scene-label">Кейс 01 — Soberi Party</div>
+
+      <div class="card-wrap">
+        <div class="card-scale">
+        <div class="card-tilt">
+        <div class="card-3d">
+          <div class="face front">
+            <img src="assets/cases/soberi.png" alt="Soberi Party — главный экран" />
+          </div>
+          <div class="face back">
+            <div class="back-inner">
+              <span class="back-tag">веб-студия</span>
+              <span class="back-mark">Studia</span>
+              <span class="back-sub">проектируем · кодим · запускаем</span>
+            </div>
+          </div>
+        </div>
+        <div class="card-float" aria-hidden="true">
+          <span class="badge">Первая готовая работа · коммерческий</span>
+          <div class="card-cap"><b>Soberi Party</b><span>Дмитров · мастер-классы</span></div>
+        </div>
+        </div><!-- /.card-tilt -->
+        </div><!-- /.card-scale -->
+
+        <div class="go-plate">
+          <a href="https://soberi-party-dmitrov.vercel.app" target="_blank" rel="noopener">
+            Перейти на сайт
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M8 7h9v9"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- OUTRO placeholder -->
+  <section class="outro">
+    <div>
+      <div class="tag">Дальше по цепочке</div>
+      <h2>Тут начнётся Кейс&nbsp;02 — Café</h2>
+      <p>Это конец прототипа первой сцены. Если ощущение разворота, скорость и заливка фона нравятся — размножу эффект на все 5 кейсов и доделаю низ страницы (процесс, прайс, контакты).</p>
+    </div>
+  </section>
+
+  <!-- floating TG (placeholder) -->
+  <a class="tg-fab" href="#contact" aria-label="Написать в Telegram">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.94 4.6 18.6 20.3c-.25 1.1-.9 1.37-1.83.85l-5.05-3.72-2.44 2.35c-.27.27-.5.5-1 .5l.36-5.13L17.9 6.2c.4-.36-.09-.56-.63-.2L6.96 12.5l-5.06-1.58c-1.1-.34-1.12-1.1.23-1.62L20.5 3.1c.92-.34 1.72.2 1.44 1.5z"/></svg>
+  </a>
+
+  <!-- GSAP -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script>
+    gsap.registerPlugin(ScrollTrigger);
+
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const vh = () => window.innerHeight;
+    const titleSpans = gsap.utils.toArray('.case-title span');
+    let sceneTL = null;
+    let floatShown = false;   // показаны ли вынесенные подписи (реальный фейд, не scrub)
+
+    // позиция плашки «Перейти на сайт»: прячется за нижней кромкой карточки и выезжает из-под неё
+    const cardEl  = document.querySelector('.card-scale');
+    const plateEl = document.querySelector('.go-plate');
+    function platePos(){
+      const half = cardEl.offsetHeight * 1.25 / 2;   // полувысота карточки в финальном масштабе
+      const ph   = plateEl.offsetHeight || 56;
+      return { hidden: half - ph - 4, shown: half + 10 };
+    }
+
+    // 3D-наклон карточки за курсором — активен ТОЛЬКО после завершения интро
+    const tiltEl    = document.querySelector('.card-tilt');
+    const hoverZone = document.querySelector('.card-wrap');
+    const TILT_MAX  = 28;           // макс. угол наклона, °
+    function resetTilt(){ if (tiltEl) tiltEl.style.transform = 'rotateX(0deg) rotateY(0deg)'; }
+    if (!reduce && tiltEl){
+      hoverZone.addEventListener('pointermove', (e)=>{
+        const r  = tiltEl.getBoundingClientRect();
+        const px = (e.clientX - r.left) / r.width  - 0.5;   // -0.5..0.5
+        const py = (e.clientY - r.top ) / r.height - 0.5;
+        tiltEl.style.transform =
+          `rotateX(${(-py*TILT_MAX).toFixed(2)}deg) rotateY(${(px*TILT_MAX).toFixed(2)}deg)`;
+      });
+      hoverZone.addEventListener('pointerleave', resetTilt);
+    }
+
+    // раскладываем заголовки на отдельные буквы — чтобы распределялись по ширине до лимитов
+    titleSpans.forEach(span=>{
+      const text = span.textContent.trim().toUpperCase();
+      span.textContent = '';
+      [...text].forEach(ch=>{
+        const i = document.createElement('i');
+        if (ch === ' ') i.className = 'sp'; else i.textContent = ch;
+        span.appendChild(i);
+      });
+    });
+
+    function resetProps(){
+      gsap.set('.card-scale',  { clearProps:'all' });
+      gsap.set('.card-3d',     { clearProps:'all' });
+      gsap.set('.fill',        { clearProps:'all' });
+      gsap.set('.go-plate',    { clearProps:'all' });
+      gsap.set('.scene-label', { clearProps:'all' });
+      gsap.set('.card-float',  { clearProps:'all' });
+      gsap.set(titleSpans,     { clearProps:'all' });
+    }
+
+    // строит сцену под выбранный вариант анимации (для DEV-переключателя)
+    function buildScene(variant){
+      if (sceneTL){ const st = sceneTL.scrollTrigger; sceneTL.kill(); if (st) st.kill(); sceneTL = null; }
+      resetProps();
+      floatShown = false;
+
+      if (reduce){
+        gsap.set('.fill', { clipPath:'circle(150% at 50% 50%)' });
+        gsap.set('.card-scale', { y:0, scale:1.2, autoAlpha:1 });
+        gsap.set('.card-3d', { rotateX:0, rotateZ:0 });
+        titleSpans.forEach(el => gsap.set(el, { opacity: variant===1 ? parseFloat(el.dataset.o) : 0, visibility:'visible' }));
+        gsap.set('.go-plate', { xPercent:-50, y:platePos().shown, autoAlpha:1 });
+        gsap.set('.card-float', { autoAlpha:1, z:0 });
+        return;
+      }
+
+      const tl = gsap.timeline({
+        scrollTrigger:{ trigger:'.scene', start:'top top', end:'+=360%', scrub:0.8, pin:true, anticipatePin:1,
+          onUpdate:(self)=>{
+            // подписи появляются реальным фейдом, когда карточка уже легла ровно (~прогресс 0.95)
+            const show = self.progress > 0.95;
+            if (show !== floatShown){
+              floatShown = show;
+              gsap.to('.card-float', { autoAlpha: show ? 1 : 0, duration:.45, ease:'sine.out', overwrite:true });
+            }
+          }
+        }
+      });
+
+      if (variant === 1){
+        // ============ АНИМАЦИЯ 1 ============
+        // появление + рост/спуск на 2D-обёртке (scale/opacity), кувырки — на 3D-слое
+        tl.fromTo('.card-scale', { autoAlpha:0 }, { autoAlpha:1, ease:'power1.out', duration:.08 }, 0);
+        // ОДНО непрерывное движение на весь таймлайн: бросок, который плавно тормозит
+        // до полной остановки в ровном положении — без стыка и паузы в конце
+        tl.fromTo('.card-scale',
+          { y:-vh()*0.34, scale:.09 },
+          { y:0, scale:1.25, ease:'power2.out', duration:1 }, 0);
+        tl.fromTo('.card-3d',
+          { rotateX:0, rotateZ:0 },
+          { rotateX:2520, rotateZ:720, ease:'power2.out', duration:1 }, 0);
+
+        // имя кейса фоном на всю страницу: проявляется СНИЗУ ВВЕРХ (25→50→75→100)
+        titleSpans.forEach((el, i) => {
+          const o = parseFloat(el.dataset.o);
+          const order = (titleSpans.length - 1 - i);  // нижняя строка (последняя в DOM) — первой
+          tl.fromTo(el,
+            { opacity:0, visibility:'hidden', yPercent:70 },
+            { opacity:o, visibility:'visible', yPercent:0, ease:'power2.out', duration:.32 }, order * 0.07);
+        });
+
+        // фон кейса раскрывается из центра, пока карточка крупная и кувыркается
+        tl.fromTo('.fill',
+          { clipPath:'circle(0% at 50% 50%)' },
+          { clipPath:'circle(150% at 50% 50%)', ease:'power2.inOut', duration:.67 }, .15);
+
+        tl.to('.scene-label', { opacity:0, duration:.2, ease:'none' }, .3);
+        // плашка выезжает ИЗ-ПОД нижней кромки карточки (slide down + fade)
+        const pp1 = platePos();
+        tl.fromTo('.go-plate',
+          { xPercent:-50, y:pp1.hidden, autoAlpha:0 },
+          { xPercent:-50, y:pp1.shown, autoAlpha:1, ease:'power3.out', duration:.14 }, .86);
+        // (подписи .card-float появляются НЕ через scrub, а реальным фейдом — см. onUpdate сцены)
+
+      } else {
+        // ============ АНИМАЦИЯ 2 — заглушка на будущее (простое появление) ============
+        gsap.set(titleSpans, { opacity:0, visibility:'hidden' });
+        gsap.set('.card-3d', { rotateX:0, rotateZ:0 });
+        tl.fromTo('.card-scale',
+          { autoAlpha:0, y:-vh()*0.18, scale:.6 },
+          { autoAlpha:1, y:0, scale:1.25, ease:'power3.out', duration:.7 }, 0);
+        tl.fromTo('.fill',
+          { clipPath:'circle(0% at 50% 50%)' },
+          { clipPath:'circle(150% at 50% 50%)', ease:'power2.inOut', duration:.5 }, .3);
+        tl.to('.scene-label', { opacity:0, duration:.2, ease:'none' }, .3);
+        const pp2 = platePos();
+        tl.fromTo('.go-plate',
+          { xPercent:-50, y:pp2.hidden, autoAlpha:0 },
+          { xPercent:-50, y:pp2.shown, autoAlpha:1, ease:'power3.out', duration:.14 }, .88);
+      }
+
+      // холд-буфер в конце: ещё пара прокруток на финальном кадре, чтобы случайно
+      // не перелистнуть на следующую секцию сразу после анимации
+      tl.to('.go-plate', { autoAlpha:1, duration:.2 });
+
+      sceneTL = tl;
+      ScrollTrigger.refresh();
+    }
+
+    buildScene(1);
+
+    // DEV-переключатель вариантов
+    document.querySelectorAll('.dev-panel button').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        document.querySelectorAll('.dev-panel button').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        window.scrollTo(0, 0);
+        buildScene(Number(btn.dataset.variant));
+      });
+    });
+  </script>
+</body>
+</html>
