@@ -257,7 +257,7 @@
     display:flex; align-items:center; justify-content:space-between; gap:10px;
     padding:14px 18px;
     color:var(--ink);            /* тёмный текст, без тёмного градиента */
-    transform:translateZ(16px);  /* приподнята над поверхностью */
+    transform:translateZ(12px);  /* приподнят — заметный объём, но на карточке */
   }
   .card-cap b{ font-family:"Bricolage Grotesque"; font-weight:600; font-size:15px; }
   .card-cap span{ font-family:"JetBrains Mono"; font-size:11px; letter-spacing:.08em; opacity:.7; }
@@ -265,8 +265,8 @@
     position:absolute; top:14px; left:14px; z-index:2;
     font-family:"JetBrains Mono"; font-size:10px; letter-spacing:.1em; text-transform:uppercase;
     background:var(--garnet); color:#fff; padding:6px 11px; border-radius:999px;
-    transform:translateZ(32px);   /* выше всех — сильнее отрывается */
-    box-shadow:0 14px 26px -8px rgba(0,0,0,.4);
+    transform:translateZ(22px);   /* заметный объём 3D */
+    box-shadow:0 12px 24px -9px rgba(0,0,0,.3);
   }
 
   /* плашка «Перейти на сайт» — выезжает сверху вниз */
@@ -474,18 +474,25 @@
         gsap.set('.card-3d', { rotateX:0, rotateZ:0 });
         titleSpans.forEach(el => gsap.set(el, { opacity: variant===1 ? parseFloat(el.dataset.o) : 0, visibility:'visible' }));
         gsap.set('.go-plate', { xPercent:-50, y:platePos().shown, autoAlpha:1 });
-        gsap.set('.card-float', { autoAlpha:1, z:0 });
+        gsap.set('.card-float', { autoAlpha:1, y:0, scale:1, z:0 });
         return;
       }
+
+      // скрытое стартовое состояние подписей — только прозрачность (без сдвига/масштаба)
+      gsap.set('.card-float', { autoAlpha:0, y:0, scale:1 });
 
       const tl = gsap.timeline({
         scrollTrigger:{ trigger:'.scene', start:'top top', end:'+=360%', scrub:0.8, pin:true, anticipatePin:1,
           onUpdate:(self)=>{
-            // подписи появляются реальным фейдом, когда карточка уже легла ровно (~прогресс 0.95)
-            const show = self.progress > 0.95;
+            // подписи появляются ТОЛЬКО когда карточка стоит ровно (rotateX кратен 360°),
+            // и лишь на финальном заходе (не мелькают на промежуточных оборотах)
+            const rx = gsap.getProperty('.card-3d', 'rotateX') || 0;
+            const m  = Math.abs(((rx % 360) + 360) % 360);   // 0..360, отклонение от ровного
+            const show = (m < 2.5 || m > 357.5) && self.progress > 0.78;
             if (show !== floatShown){
               floatShown = show;
-              gsap.to('.card-float', { autoAlpha: show ? 1 : 0, duration:.45, ease:'sine.out', overwrite:true });
+              // чистый фейд по прозрачности — плашка и текст одним твином, вдвое медленнее (≈2 прокрутки)
+              gsap.to('.card-float', { autoAlpha: show ? 1 : 0, duration:1.0, ease:'sine.inOut', overwrite:true });
             }
           }
         }
