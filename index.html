@@ -9,7 +9,7 @@
 <!-- Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 
 <style>
   :root{
@@ -22,6 +22,7 @@
     --ink:    #1b1714;
     --ink-2:  #5c534a;
     --garnet: #9e2b45;       /* фирменный акцент портфолио */
+    --green:  #3fa66b;
     --line:   rgba(27,23,20,.14);
   }
 
@@ -42,99 +43,86 @@
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
 
-  /* ---------- top bar ---------- */
-  .bar{
-    position:fixed; top:0; left:0; right:0; z-index:40;
+  /* ---------- HEADER (плавающая пилюля-меню + CTA) ---------- */
+  .site-head{
+    position:absolute; top:0; left:0; right:0; z-index:40;
     display:flex; align-items:center; justify-content:space-between;
-    padding:22px clamp(20px,5vw,64px);
-    mix-blend-mode:difference; color:#fff;
+    padding:20px clamp(20px,5vw,64px);
   }
-  .brand{ font-family:"Bricolage Grotesque"; font-weight:800; font-size:19px; letter-spacing:-.02em; }
-  .brand .ph{ opacity:.55; }
-  .bar nav{ display:flex; gap:26px; font-size:13px; letter-spacing:.04em; text-transform:uppercase; }
-  .bar nav a{ color:inherit; text-decoration:none; opacity:.8; }
-  @media(max-width:680px){ .bar nav{ display:none; } }
+  .brand{ font-family:"Bricolage Grotesque", system-ui, "Segoe UI", sans-serif; font-weight:800; font-size:19px; letter-spacing:-.02em; text-decoration:none; color:var(--ink); }
+  .brand .ph{ opacity:.5; }
+  .hgroup{ display:flex; align-items:center; gap:16px; }
+  .hstatus{ display:inline-flex; align-items:center; gap:7px; font-family:"JetBrains Mono"; font-size:11px; letter-spacing:.04em; text-transform:uppercase; color:var(--ink-2); }
+  .hstatus .dot{ width:8px; height:8px; border-radius:50%; background:var(--green); position:relative; }
+  .hstatus .dot::after{ content:""; position:absolute; inset:0; border-radius:50%; background:var(--green); animation:pulse 1.9s ease-out infinite; }
+  .navpill{
+    position:absolute; left:50%; transform:translateX(-50%);
+    display:flex; gap:4px; padding:6px; border-radius:999px;
+    background:rgba(27,23,20,.04); border:1px solid rgba(27,23,20,.12); backdrop-filter:blur(10px);
+  }
+  .navpill a{
+    position:relative; color:var(--ink); text-decoration:none; font-family:"JetBrains Mono";
+    font-size:12.5px; letter-spacing:.05em; text-transform:uppercase;
+    padding:9px 18px; border-radius:999px; opacity:.85; transition:background .25s, opacity .25s;
+  }
+  .navpill a:hover{ opacity:1; background:rgba(27,23,20,.06); }
+  .hcta{
+    display:inline-flex; align-items:center; gap:9px; text-decoration:none;
+    font-family:"Hanken Grotesk"; font-weight:600; font-size:14px;
+    padding:12px 22px; border-radius:999px; background:var(--garnet); color:#fff;
+    box-shadow:0 14px 28px -12px rgba(158,43,69,.6);
+    transition:transform .3s cubic-bezier(.2,.8,.2,1), box-shadow .3s, background .3s;
+  }
+  .hcta:hover{ transform:translateY(-2px); background:#b23a52; box-shadow:0 18px 34px -12px rgba(158,43,69,.7); }
+  .hcta svg{ width:15px; height:15px; transition:transform .3s cubic-bezier(.2,.8,.2,1); }
+  .hcta:hover svg{ transform:translate(2px,-2px); }
+  @media(max-width:880px){ .navpill, .hstatus{ display:none; } }
 
-  /* DEV-панель выбора анимации (временная — потом удалим) */
-  .dev-panel{
-    position:fixed; top:60px; left:clamp(20px,5vw,64px); z-index:80;
-    display:flex; align-items:center; gap:8px;
-    background:rgba(27,23,20,.92); color:#f4e9d8; padding:8px 10px; border-radius:12px;
-    font-family:"JetBrains Mono"; font-size:11px; letter-spacing:.08em;
-    box-shadow:0 12px 30px -12px rgba(0,0,0,.5);
-  }
-  .dev-panel .dev-label{ opacity:.6; text-transform:uppercase; }
-  .dev-panel button{
-    font-family:"JetBrains Mono"; font-size:12px; color:#f4e9d8;
-    background:transparent; border:1px solid rgba(244,233,216,.25); border-radius:8px;
-    width:28px; height:28px; cursor:pointer; transition:all .2s;
-  }
-  .dev-panel button:hover{ border-color:rgba(244,233,216,.6); }
-  .dev-panel button.active{ background:var(--garnet); border-color:var(--garnet); color:#fff; }
 
-  /* ---------- HERO ---------- */
+  /* ---------- HERO (контур + барабан ниши) ---------- */
   .hero{
-    position:relative; min-height:100dvh;
-    display:grid; grid-template-columns:1.15fr .85fr; align-items:center;
-    padding:0 clamp(20px,5vw,64px);
+    position:relative; min-height:100dvh; display:flex; flex-direction:column;
+    padding:clamp(26px,5vh,52px) clamp(20px,5vw,64px);
     background:
       radial-gradient(120% 90% at 85% 15%, var(--hero-bg-2), transparent 60%),
       var(--hero-bg);
     overflow:hidden;
   }
-  .hero::after{ /* нижняя кромка втекает в блаш Soberi — намёк на цепочку */
-    content:""; position:absolute; left:0; right:0; bottom:0; height:34vh; pointer-events:none;
-    background:linear-gradient(to bottom, transparent, var(--soberi-fill));
-    opacity:.5;
+  .hero::after{ content:""; position:absolute; left:0; right:0; bottom:0; height:34vh; pointer-events:none;
+    background:linear-gradient(to bottom, transparent, var(--soberi-fill)); opacity:.5; }
+  .hero .center{ position:relative; z-index:2; margin:auto 0; width:100%; }
+  .hero .kick{ font-family:"JetBrains Mono"; font-size:12px; letter-spacing:.24em; text-transform:uppercase; color:var(--garnet); margin-bottom:26px; }
+  .hero h1{ font-family:"Bricolage Grotesque", system-ui, "Segoe UI", sans-serif; font-weight:800; font-size:clamp(44px,9.9vw,170px); line-height:1.04; letter-spacing:.005em; text-transform:uppercase; margin-left:-.045em; }
+  .hero h1 .o{ color:transparent; -webkit-text-stroke:2px var(--ink); letter-spacing:.02em; transition:color .4s,-webkit-text-stroke .4s; cursor:default; }
+  .hero h1 .o:hover{ color:var(--garnet); -webkit-text-stroke:2px var(--garnet); }
+  .hero .roll{ display:block; position:relative; height:1.18em; margin-top:.1em; overflow:visible; clip-path:inset(9% -100% 0 0); }
+  .hero .roll .r{ position:absolute; left:0; bottom:0; white-space:nowrap; line-height:1; color:var(--garnet);
+    transform:translateY(125%); opacity:0; will-change:transform,opacity;
+    transition:transform .62s cubic-bezier(.16,1,.3,1), opacity .5s ease; }
+  .hero .roll .r.on{ transform:translateY(0); opacity:1; }
+  .hero .roll .r.out{ transform:translateY(-125%); opacity:0; }
+  .hero .roll .r.reset{ transition:none; }
+  .hero .sub{ max-width:480px; margin-top:30px; color:var(--ink-2); font-family:"Hanken Grotesk"; font-size:17px; line-height:1.6; }
+  .hero .row{ display:flex; gap:14px; align-items:center; margin-top:30px; flex-wrap:wrap; }
+  .hero .btn{ display:inline-flex; align-items:center; gap:10px; text-decoration:none; font-family:"Hanken Grotesk"; font-weight:600; font-size:16px; padding:16px 30px; border-radius:999px; cursor:pointer; border:0; will-change:transform; }
+  .hero .btn-fill{ background:var(--ink); color:var(--hero-bg); transition:transform .35s cubic-bezier(.2,.8,.2,1); }
+  .hero .btn-ghost{ background:transparent; border:1px solid var(--line); color:var(--ink); transition:border-color .25s; }
+  .hero .btn-ghost:hover{ border-color:var(--ink); }
+  .hero .price{ font-family:"JetBrains Mono"; font-size:13px; color:var(--ink-2); }
+  .hero .foot{ position:relative; z-index:2; display:flex; align-items:center; justify-content:space-between; gap:20px; }
+  .hero .av{ display:inline-flex; align-items:center; gap:11px; border:1px solid var(--line); border-radius:999px; padding:11px 20px; font-family:"JetBrains Mono"; font-size:18px; letter-spacing:.03em; color:var(--ink); }
+  .hero .av .dot{ width:10px; height:10px; border-radius:50%; background:var(--green); position:relative; }
+  .hero .av .dot::after{ content:""; position:absolute; inset:0; border-radius:50%; background:var(--green); animation:pulse 1.9s ease-out infinite; }
+  @keyframes pulse{ from{ transform:scale(1); opacity:.7; } to{ transform:scale(3.4); opacity:0; } }
+  .hero .tg-link{ display:inline-flex; align-items:center; gap:10px; text-decoration:none; color:var(--ink);
+    font-family:"JetBrains Mono"; font-size:18px; letter-spacing:.03em; opacity:.72; transition:opacity .2s, transform .25s cubic-bezier(.2,.8,.2,1); }
+  .hero .tg-link:hover{ opacity:1; transform:translateY(-2px); }
+  .hero .tg-link svg{ width:22px; height:22px; }
+  .hero .tg-link b{ font-weight:600; }
+  @media(max-width:680px){
+    .hero .foot{ flex-direction:column; align-items:flex-start; gap:14px; }
+    .hero .av, .hero .tg-link{ font-size:13px; }
   }
-  .hero-copy{ position:relative; z-index:2; max-width:680px; }
-  .eyebrow{
-    font-family:"JetBrains Mono"; font-size:12px; letter-spacing:.22em; text-transform:uppercase;
-    color:var(--garnet); margin-bottom:26px; display:flex; align-items:center; gap:12px;
-  }
-  .eyebrow::before{ content:""; width:34px; height:1px; background:var(--garnet); display:inline-block; }
-  .hero h1{
-    font-family:"Bricolage Grotesque"; font-weight:800;
-    font-size:clamp(44px,7vw,104px); line-height:.92; letter-spacing:-.035em;
-  }
-  .hero h1 em{ font-style:normal; color:var(--garnet); }
-  .hero p.lead{
-    margin-top:28px; font-size:clamp(16px,1.5vw,20px); line-height:1.6; max-width:46ch; color:var(--ink-2);
-  }
-  .hero .price{
-    margin-top:14px; font-family:"JetBrains Mono"; font-size:14px; letter-spacing:.02em; color:var(--ink);
-  }
-  .cta-row{ margin-top:38px; display:flex; gap:14px; flex-wrap:wrap; }
-  .btn{
-    display:inline-flex; align-items:center; gap:10px;
-    font-family:"Hanken Grotesk"; font-weight:600; font-size:15px;
-    padding:15px 26px; border-radius:999px; text-decoration:none; cursor:pointer;
-    border:1px solid transparent; transition:transform .25s cubic-bezier(.16,1,.3,1), background .25s, color .25s;
-  }
-  .btn:active{ transform:translateY(1px) scale(.98); }
-  .btn-primary{ background:var(--ink); color:var(--hero-bg); }
-  .btn-primary:hover{ background:var(--garnet); color:#fff; }
-  .btn-ghost{ border-color:var(--line); color:var(--ink); }
-  .btn-ghost:hover{ border-color:var(--ink); }
-
-  .hero-aside{ position:relative; z-index:1; height:100%; }
-  .hero-mark{ /* крупный декоративный знак-шифр */
-    position:absolute; right:-2vw; top:50%; transform:translateY(-50%);
-    font-family:"Bricolage Grotesque"; font-weight:800; font-size:34vh; line-height:.8;
-    color:var(--ink); opacity:.05; letter-spacing:-.05em; user-select:none;
-  }
-  @media(max-width:880px){
-    .hero{ grid-template-columns:1fr; }
-    .hero-aside{ display:none; }
-  }
-
-  .scroll-hint{
-    position:absolute; left:clamp(20px,5vw,64px); bottom:30px; z-index:3;
-    font-family:"JetBrains Mono"; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--ink-2);
-    display:flex; align-items:center; gap:10px;
-  }
-  .scroll-hint .dot{ width:7px; height:7px; border-radius:50%; background:var(--garnet); animation:bob 1.6s ease-in-out infinite; }
-  @keyframes bob{ 0%,100%{ transform:translateY(0); opacity:1 } 50%{ transform:translateY(5px); opacity:.4 } }
 
   /* ---------- SHOWCASE SCENE ---------- */
   .scene{ position:relative; height:100dvh; }
@@ -166,7 +154,7 @@
     position:absolute; inset:0; z-index:2; pointer-events:none; overflow:hidden;
     display:flex; flex-direction:column; align-items:stretch; justify-content:space-between;
     padding:4vh 0;
-    font-family:"Bricolage Grotesque"; font-weight:800; text-transform:uppercase;
+    font-family:"Bricolage Grotesque", system-ui, "Segoe UI", sans-serif; font-weight:800; text-transform:uppercase;
     line-height:.9; color:var(--ink);
   }
   /* строка = флекс-ряд букв, распределённых по ширине до краёв-лимитов */
@@ -178,17 +166,6 @@
   }
   .case-title span i{ font-style:normal; display:block; }
   .case-title span i.sp{ width:2.5vw; }   /* пробел между словами */
-
-  /* точка-логотип кейса, из неё вырастает карточка */
-  .dot{
-    position:absolute; left:50%; top:50%;
-    z-index:3; width:40px; height:40px; border-radius:50%;
-    background:radial-gradient(circle at 50% 34%, #2c1f1a, #120f0d);
-    display:flex; align-items:center; justify-content:center;
-    color:#f4e9d8; font-family:"Bricolage Grotesque"; font-weight:800; font-size:16px;
-    box-shadow:0 10px 26px -8px rgba(0,0,0,.55), 0 0 0 1px rgba(244,233,216,.18), 0 0 0 5px rgba(158,43,69,.12);
-    opacity:0; will-change:transform,opacity;
-  }
 
   /* внешняя 2D-обёртка: scale / y / opacity (НЕ 3D — чтобы не плющить грани) */
   .card-scale{
@@ -244,7 +221,7 @@
     font-family:"JetBrains Mono"; font-size:11px; letter-spacing:.34em; text-transform:uppercase; color:#cf6b82;
   }
   .back-mark{
-    font-family:"Bricolage Grotesque"; font-weight:800; font-size:clamp(34px,6vw,58px);
+    font-family:"Bricolage Grotesque", system-ui, "Segoe UI", sans-serif; font-weight:800; font-size:clamp(34px,6vw,58px);
     letter-spacing:-.03em; line-height:1; position:relative;
   }
   .back-mark::after{ content:""; display:inline-block; width:9px; height:9px; border-radius:50%; background:#cf6b82; margin-left:6px; vertical-align:middle; }
@@ -259,7 +236,7 @@
     color:var(--ink);            /* тёмный текст, без тёмного градиента */
     transform:translateZ(12px);  /* приподнят — заметный объём, но на карточке */
   }
-  .card-cap b{ font-family:"Bricolage Grotesque"; font-weight:600; font-size:15px; }
+  .card-cap b{ font-family:"Bricolage Grotesque", system-ui, "Segoe UI", sans-serif; font-weight:600; font-size:15px; }
   .card-cap span{ font-family:"JetBrains Mono"; font-size:11px; letter-spacing:.08em; opacity:.7; }
   .badge{
     position:absolute; top:14px; left:14px; z-index:2;
@@ -276,14 +253,34 @@
     will-change:transform,opacity;
   }
   .go-plate a{
+    position:relative; overflow:hidden; isolation:isolate;
     display:inline-flex; align-items:center; gap:12px;
     font-family:"Hanken Grotesk"; font-weight:600; font-size:16px;
     color:#fff; text-decoration:none;
     background:var(--ink); padding:16px 30px; border-radius:999px;
     box-shadow:0 24px 50px -18px rgba(27,23,20,.6);
+    transition:background .35s ease, box-shadow .35s ease, transform .35s cubic-bezier(.2,.8,.2,1);
+    will-change:transform;
   }
-  .go-plate a:hover{ background:var(--garnet); }
-  .go-plate svg{ width:18px; height:18px; }
+  .go-plate a:hover{ background:var(--garnet); box-shadow:0 26px 58px -16px rgba(158,43,69,.55); }
+  /* блик, пробегающий по кнопке при наведении */
+  .go-plate a::before{
+    content:''; position:absolute; top:0; left:-130%; width:70%; height:100%; z-index:1;
+    background:linear-gradient(115deg, transparent, rgba(255,255,255,.42), transparent);
+    transform:skewX(-18deg); pointer-events:none;
+  }
+  .go-plate a:hover::before{ animation:goShine .85s cubic-bezier(.2,.7,.2,1); }
+  @keyframes goShine{ from{ left:-130%; } to{ left:135%; } }
+  /* мягкое световое пятно за курсором */
+  .go-plate a::after{
+    content:''; position:absolute; inset:0; z-index:0; opacity:0; pointer-events:none;
+    background:radial-gradient(130px circle at var(--mx,50%) var(--my,50%), rgba(255,255,255,.22), transparent 60%);
+    transition:opacity .3s ease;
+  }
+  .go-plate a:hover::after{ opacity:1; }
+  .go-label{ position:relative; z-index:2; }
+  .go-plate svg{ position:relative; z-index:2; width:18px; height:18px; transition:transform .3s cubic-bezier(.2,.8,.2,1); }
+  .go-plate a:hover svg{ transform:translate(3px,-3px); }
 
   /* ---------- outro (заглушка под след. сцену / прайс) ---------- */
   .outro{
@@ -291,20 +288,9 @@
     display:flex; align-items:center; justify-content:center; text-align:center; padding:60px 20px;
   }
   .outro div{ max-width:540px; }
-  .outro h2{ font-family:"Bricolage Grotesque"; font-weight:800; font-size:clamp(28px,4vw,46px); letter-spacing:-.03em; line-height:1; }
+  .outro h2{ font-family:"Bricolage Grotesque", system-ui, "Segoe UI", sans-serif; font-weight:800; font-size:clamp(28px,4vw,46px); letter-spacing:-.03em; line-height:1; }
   .outro p{ margin-top:16px; color:var(--ink-2); font-size:16px; line-height:1.6; }
   .outro .tag{ font-family:"JetBrains Mono"; font-size:12px; letter-spacing:.2em; text-transform:uppercase; color:var(--garnet); margin-bottom:18px; }
-
-  /* плавающая TG-кнопка (плейсхолдер) */
-  .tg-fab{
-    position:fixed; right:22px; bottom:22px; z-index:50;
-    width:54px; height:54px; border-radius:50%;
-    background:var(--garnet); color:#fff; display:flex; align-items:center; justify-content:center;
-    box-shadow:0 14px 30px -10px rgba(158,43,69,.7); text-decoration:none;
-    transition:transform .25s cubic-bezier(.16,1,.3,1);
-  }
-  .tg-fab:hover{ transform:translateY(-3px) scale(1.05); }
-  .tg-fab svg{ width:26px; height:26px; }
 
   @media(prefers-reduced-motion:reduce){
     .dot{ animation:none; }
@@ -314,36 +300,47 @@
 <body>
   <div class="grain"></div>
 
-  <header class="bar">
-    <div class="brand"><span class="ph">[</span>СТУДИЯ<span class="ph">]</span></div>
-    <nav>
-      <a href="#work">Работы</a>
-      <a href="#price">Прайс</a>
-      <a href="#contact">Контакты</a>
-    </nav>
-  </header>
-
-  <!-- DEV: переключатель вариантов анимации (временный, потом удалим) -->
-  <div class="dev-panel">
-    <span class="dev-label">анимация</span>
-    <button data-variant="1" class="active">1</button>
-    <button data-variant="2">2</button>
-  </div>
-
   <!-- HERO -->
   <section class="hero">
-    <div class="hero-copy">
-      <div class="eyebrow">Веб-студия · сайты для бизнеса</div>
-      <h1>Сайты,<br>которые <em>работают</em><br>на вас.</h1>
-      <p class="lead">Делаем быстрые, живые сайты под малый бизнес — от лендинга до многостраничника. Запуск за&nbsp;3–5&nbsp;дней.</p>
-      <p class="price">Лендинг — от 30к · Сайт-визитка — от 40к</p>
-      <div class="cta-row">
-        <a class="btn btn-primary" href="#contact">Обсудить проект →</a>
+    <header class="site-head">
+      <div class="hgroup">
+        <a class="brand" href="#"><span class="ph">[</span>СТУДИЯ<span class="ph">]</span></a>
+        <span class="hstatus"><span class="dot"></span> открыты</span>
+      </div>
+      <nav class="navpill">
+        <a href="#work">Работы</a><a href="#price">Прайс</a><a href="#about">О нас</a><a href="#contact">Контакты</a>
+      </nav>
+      <a class="hcta" href="#contact">Обсудить проект <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M8 7h9v9"/></svg></a>
+    </header>
+
+    <div class="center">
+      <div class="kick">Веб-студия · сайты для бизнеса · под ключ</div>
+      <h1>
+        <span class="o">Сайты</span> <span class="o">для</span><br>
+        <span class="roll" id="rollNiche">
+          <span class="r on">кафе.</span>
+          <span class="r">автосервисов.</span>
+          <span class="r">юристов.</span>
+          <span class="r">мастер-классов.</span>
+          <span class="r">барбершопов.</span>
+          <span class="r">вашего дела.</span>
+        </span>
+      </h1>
+      <p class="sub">Под любую нишу — лендинг или сайт-визитка под ключ. Дизайн, код и запуск за&nbsp;3–5&nbsp;дней.</p>
+      <div class="row">
+        <a class="btn btn-fill" id="heroCta" href="#contact">Обсудить проект →</a>
         <a class="btn btn-ghost" href="#work">Смотреть работы</a>
+        <span class="price">от 30к</span>
       </div>
     </div>
-    <div class="hero-aside"><div class="hero-mark">S</div></div>
-    <div class="scroll-hint"><span class="dot"></span> Листайте вниз</div>
+
+    <div class="foot">
+      <span class="av"><span class="dot"></span> Работаем ежедневно · 10:00–22:00 МСК</span>
+      <a class="tg-link" href="#" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg>
+        Наш Telegram-канал · <b>@studia</b>
+      </a>
+    </div>
   </section>
 
   <!-- SCENE 1 — Soberi -->
@@ -382,7 +379,7 @@
 
         <div class="go-plate">
           <a href="https://soberi-party-dmitrov.vercel.app" target="_blank" rel="noopener">
-            Перейти на сайт
+            <span class="go-label">Перейти на сайт</span>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M8 7h9v9"/></svg>
           </a>
         </div>
@@ -399,10 +396,28 @@
     </div>
   </section>
 
-  <!-- floating TG (placeholder) -->
-  <a class="tg-fab" href="#contact" aria-label="Написать в Telegram">
-    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.94 4.6 18.6 20.3c-.25 1.1-.9 1.37-1.83.85l-5.05-3.72-2.44 2.35c-.27.27-.5.5-1 .5l.36-5.13L17.9 6.2c.4-.36-.09-.56-.63-.2L6.96 12.5l-5.06-1.58c-1.1-.34-1.12-1.1.23-1.62L20.5 3.1c.92-.34 1.72.2 1.44 1.5z"/></svg>
-  </a>
+  <!-- HERO: барабан ниш + magnetic CTA -->
+  <script>
+    (function(){
+      var reduceH = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var mouseH  = matchMedia('(hover:hover) and (pointer:fine)').matches;
+      var roll = document.getElementById('rollNiche');
+      if (roll && !reduceH){
+        var words = [].slice.call(roll.querySelectorAll('.r')), i = 0;
+        setInterval(function(){
+          var cur = words[i]; i = (i + 1) % words.length; var nxt = words[i];
+          cur.classList.remove('on'); cur.classList.add('out'); nxt.classList.add('on');
+          setTimeout(function(){ cur.classList.add('reset'); cur.classList.remove('out'); void cur.offsetWidth; cur.classList.remove('reset'); }, 640);
+        }, 2000);
+      }
+      var b = document.getElementById('heroCta');
+      if (b && mouseH){
+        b.addEventListener('pointermove', function(e){ var r = b.getBoundingClientRect();
+          b.style.transform = 'translate(' + ((e.clientX-r.left-r.width/2)*0.3) + 'px,' + ((e.clientY-r.top-r.height/2)*0.4) + 'px)'; });
+        b.addEventListener('pointerleave', function(){ b.style.transform = ''; });
+      }
+    })();
+  </script>
 
   <!-- GSAP -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
@@ -439,6 +454,23 @@
           `rotateX(${(-py*TILT_MAX).toFixed(2)}deg) rotateY(${(px*TILT_MAX).toFixed(2)}deg)`;
       });
       hoverZone.addEventListener('pointerleave', resetTilt);
+    }
+
+    // magnetic + spotlight на кнопке «Перейти на сайт» (только мышь)
+    if (matchMedia('(hover:hover) and (pointer:fine)').matches){
+      const goLink = document.querySelector('.go-plate a');
+      if (goLink){
+        const S = 0.3;   // сила притяжения
+        goLink.addEventListener('pointermove', (e)=>{
+          const r = goLink.getBoundingClientRect();
+          const x = e.clientX - r.left - r.width/2;
+          const y = e.clientY - r.top  - r.height/2;
+          goLink.style.transform = `translate(${(x*S).toFixed(1)}px, ${(y*S).toFixed(1)}px)`;
+          goLink.style.setProperty('--mx', `${(e.clientX - r.left).toFixed(0)}px`);
+          goLink.style.setProperty('--my', `${(e.clientY - r.top ).toFixed(0)}px`);
+        });
+        goLink.addEventListener('pointerleave', ()=>{ goLink.style.transform = ''; });
+      }
     }
 
     // раскладываем заголовки на отдельные буквы — чтобы распределялись по ширине до лимитов
@@ -559,16 +591,6 @@
     }
 
     buildScene(1);
-
-    // DEV-переключатель вариантов
-    document.querySelectorAll('.dev-panel button').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
-        document.querySelectorAll('.dev-panel button').forEach(b=>b.classList.remove('active'));
-        btn.classList.add('active');
-        window.scrollTo(0, 0);
-        buildScene(Number(btn.dataset.variant));
-      });
-    });
   </script>
 </body>
 </html>
