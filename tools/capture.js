@@ -30,14 +30,14 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     const page = await browser.newPage();
     await page.setViewport({ width: 1440, height: 900, deviceScaleFactor: 1 });
     try {
-      await page.goto(s.url, { waitUntil: 'networkidle0', timeout: 60000 });
+      await page.goto(s.url, { waitUntil: 'domcontentloaded', timeout: 45000 });
+      await sleep(7000); // даём анимациям появления доиграть
+      const out = path.join(OUT, s.name + '.png');
+      await page.screenshot({ path: out });
+      console.log('OK  ' + s.name + ' -> ' + out);
     } catch (e) {
-      await page.goto(s.url, { waitUntil: 'domcontentloaded', timeout: 60000 });
+      console.log('FAIL ' + s.name + ' :: ' + (e && e.message));
     }
-    await sleep(7000); // даём анимациям появления доиграть
-    const out = path.join(OUT, s.name + '.png');
-    await page.screenshot({ path: out });
-    console.log('OK  ' + s.name + ' -> ' + out);
     await page.close();
   }
 
