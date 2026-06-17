@@ -91,7 +91,13 @@
   .hero::after{ content:""; position:absolute; left:0; right:0; bottom:0; height:34vh; pointer-events:none;
     background:linear-gradient(to bottom, transparent, var(--soberi-fill)); opacity:.5; }
   .hero .center{ position:relative; z-index:2; margin:auto 0; width:100%; }
-  .hero .kick{ font-family:"JetBrains Mono"; font-size:12px; letter-spacing:.24em; text-transform:uppercase; color:var(--garnet); margin-bottom:26px; }
+  /* толстая закрашенная диагональ-перевязь через весь hero — в тон фону, за текстом */
+  .hero-accent{ position:absolute; z-index:1; pointer-events:none;
+    top:60%; left:50%; width:200vw; height:clamp(320px,32vw,640px);
+    transform:translate(-50%,-50%) rotate(-27deg);
+    background:linear-gradient(160deg, var(--hero-bg-2), #dccaa9); opacity:.5; }
+  @media(max-width:1100px){ .hero-accent{ display:none; } }
+  .hero .kick{ font-family:"JetBrains Mono"; font-size:12px; letter-spacing:.24em; text-transform:uppercase; color:var(--garnet); margin-bottom:42px; }
   .hero h1{ font-family:"Bricolage Grotesque", system-ui, "Segoe UI", sans-serif; font-weight:800; font-size:clamp(44px,9.9vw,170px); line-height:1.04; letter-spacing:.005em; text-transform:uppercase; margin-left:-.045em; }
   .hero h1 .o{ color:transparent; -webkit-text-stroke:2px var(--ink); letter-spacing:.02em; transition:color .4s,-webkit-text-stroke .4s; cursor:default; }
   .hero h1 .o:hover{ color:var(--garnet); -webkit-text-stroke:2px var(--garnet); }
@@ -108,6 +114,7 @@
   .hero .btn-fill{ background:var(--ink); color:var(--hero-bg); transition:transform .35s cubic-bezier(.2,.8,.2,1); }
   .hero .btn-ghost{ background:transparent; border:1px solid var(--line); color:var(--ink); transition:border-color .25s; }
   .hero .btn-ghost:hover{ border-color:var(--ink); }
+  .hero .btn svg{ width:18px; height:18px; }
   .hero .price{ font-family:"JetBrains Mono"; font-size:13px; color:var(--ink-2); }
   .hero .foot{ position:relative; z-index:2; display:flex; align-items:center; justify-content:space-between; gap:20px; }
   .hero .av{ display:inline-flex; align-items:center; gap:11px; border:1px solid var(--line); border-radius:999px; padding:11px 20px; font-family:"JetBrains Mono"; font-size:18px; letter-spacing:.03em; color:var(--ink); }
@@ -143,7 +150,12 @@
   .scene-label{
     position:absolute; top:26px; left:0; right:0; z-index:3; text-align:center;
     font-family:"JetBrains Mono"; font-size:12px; letter-spacing:.22em; text-transform:uppercase;
-    color:var(--stext, var(--ink-2)); opacity:.6;
+    color:#fff; mix-blend-mode:difference;   /* контраст к фону до появления заливки */
+  }
+  /* декоративная полоска у метки кейса */
+  .scene-bar{
+    position:absolute; top:54px; left:50%; transform:translateX(-50%); z-index:3;
+    width:50px; height:2px; border-radius:2px; background:var(--garnet); opacity:.65;
   }
 
   .card-wrap{ position:relative; z-index:5; display:flex; align-items:center; justify-content:center; }
@@ -154,7 +166,7 @@
     display:flex; flex-direction:column; align-items:stretch; justify-content:space-between;
     padding:4vh 0;
     font-family:"Bricolage Grotesque", system-ui, "Segoe UI", sans-serif; font-weight:800; text-transform:uppercase;
-    line-height:.9; color:var(--stext, var(--ink));
+    line-height:.9; color:#fff; mix-blend-mode:difference;   /* авто-контраст к фону под буквами */
   }
   /* строка = флекс-ряд букв, распределённых по ширине до краёв-лимитов */
   .case-title span{
@@ -233,35 +245,39 @@
     display:flex; align-items:center; justify-content:space-between; gap:10px;
     padding:14px 18px;
     color:var(--stext, var(--ink));   /* цвет под тему кейса (тёмный/кремовый) */
-    transform:translateZ(12px);  /* приподнят — заметный объём, но на карточке */
   }
   .card-cap b{ font-family:"Bricolage Grotesque", system-ui, "Segoe UI", sans-serif; font-weight:600; font-size:15px; }
   .card-cap span{ font-family:"JetBrains Mono"; font-size:11px; letter-spacing:.08em; opacity:.7; }
+  /* на тёмных кейсах — тень для читаемости нижней подписи */
+  .scene-dark .card-cap b, .scene-dark .card-cap span{ text-shadow:0 1px 12px rgba(0,0,0,.6); }
   .badge{
     position:absolute; top:14px; left:14px; z-index:2;
     font-family:"JetBrains Mono"; font-size:10px; letter-spacing:.1em; text-transform:uppercase;
     background:var(--garnet); color:#fff; padding:6px 11px; border-radius:999px;
-    transform:translateZ(22px);   /* заметный объём 3D */
-    box-shadow:0 12px 24px -9px rgba(0,0,0,.3);
+    box-shadow:0 8px 18px -8px rgba(0,0,0,.35);
   }
 
   /* плашка «Перейти на сайт» — выезжает сверху вниз */
   .go-plate{
-    position:absolute; z-index:1; left:50%; top:50%;   /* z НИЖЕ карточки => прячется под ней */
-    transform:translate(-50%,150px); opacity:0;
+    position:absolute; z-index:1; left:0; right:0; top:50%;   /* на всю ширину => кнопка строго по центру */
+    display:flex; justify-content:center;
+    transform:translateY(150px); opacity:0;
     will-change:transform,opacity;
   }
   .go-plate a{
     position:relative; overflow:hidden; isolation:isolate;
     display:inline-flex; align-items:center; gap:12px;
-    font-family:"Hanken Grotesk"; font-weight:600; font-size:16px;
+    font-family:"JetBrains Mono"; font-weight:600; font-size:13px; letter-spacing:.1em; text-transform:uppercase;
     color:#fff; text-decoration:none;
-    background:var(--ink); padding:16px 30px; border-radius:999px;
+    background:var(--ink); padding:17px 32px; border-radius:999px;
     box-shadow:0 24px 50px -18px rgba(27,23,20,.6);
     transition:background .35s ease, box-shadow .35s ease, transform .35s cubic-bezier(.2,.8,.2,1);
     will-change:transform;
   }
   .go-plate a:hover{ background:var(--garnet); box-shadow:0 26px 58px -16px rgba(158,43,69,.55); }
+  /* на тёмных кейсах — светлая плашка для контраста */
+  .scene-dark .go-plate a{ background:var(--hero-bg); color:var(--ink); box-shadow:0 24px 50px -18px rgba(0,0,0,.55); }
+  .scene-dark .go-plate a:hover{ background:var(--garnet); color:#fff; box-shadow:0 26px 58px -16px rgba(158,43,69,.6); }
   /* блик, пробегающий по кнопке при наведении */
   .go-plate a::before{
     content:''; position:absolute; top:0; left:-130%; width:70%; height:100%; z-index:1;
@@ -315,17 +331,18 @@
   .pbtn:hover{ background:var(--garnet); color:#fff; }
   .price-note{ margin-top:24px; font-family:"JetBrains Mono"; font-size:13px; color:var(--ink-2); }
 
-  .contact{ background:var(--ink); color:var(--hero-bg); }
+  .contact{ background:var(--ink); color:var(--hero-bg); padding-block:clamp(54px,8vh,92px); }
   .contact .sec-kick{ color:#cf6b82; }
-  .contact h2{ color:var(--hero-bg); max-width:18ch; }
+  .contact h2{ color:var(--hero-bg); max-width:18ch; font-size:clamp(30px,4.6vw,56px); }
   .contact h2 em{ font-style:normal; color:var(--garnet); }
-  .contact-row{ margin-top:36px; display:flex; align-items:center; gap:24px; flex-wrap:wrap; }
-  .btn-big{ display:inline-flex; align-items:center; gap:12px; text-decoration:none; font-family:"Hanken Grotesk"; font-weight:600; font-size:18px; padding:18px 32px; border-radius:999px; background:var(--garnet); color:#fff; transition:transform .3s cubic-bezier(.2,.8,.2,1), box-shadow .3s; box-shadow:0 16px 34px -14px rgba(158,43,69,.7); }
+  .contact-row{ margin-top:28px; display:flex; align-items:center; gap:20px; flex-wrap:wrap; }
+  .btn-big{ display:inline-flex; align-items:center; gap:11px; white-space:nowrap; text-decoration:none; font-family:"JetBrains Mono"; font-weight:600; font-size:14px; letter-spacing:.08em; text-transform:uppercase; padding:16px 28px; border-radius:999px; background:var(--garnet); color:#fff; transition:transform .3s cubic-bezier(.2,.8,.2,1), box-shadow .3s; box-shadow:0 16px 34px -14px rgba(158,43,69,.7); }
+  .btn-big svg{ width:18px; height:18px; flex:none; }
   .btn-big:hover{ transform:translateY(-3px); box-shadow:0 22px 40px -14px rgba(158,43,69,.8); }
   .contact .hours{ font-family:"JetBrains Mono"; font-size:14px; color:rgba(237,228,211,.6); display:inline-flex; align-items:center; gap:10px; }
   .contact .hours .dot{ width:9px; height:9px; border-radius:50%; background:var(--green); position:relative; }
   .contact .hours .dot::after{ content:""; position:absolute; inset:0; border-radius:50%; background:var(--green); animation:pulse 1.9s ease-out infinite; }
-  .foot-bar{ margin-top:clamp(60px,10vh,120px); border-top:1px solid rgba(237,228,211,.14); padding-top:24px; display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; font-family:"JetBrains Mono"; font-size:12px; letter-spacing:.04em; color:rgba(237,228,211,.55); }
+  .foot-bar{ margin-top:clamp(40px,6vh,72px); border-top:1px solid rgba(237,228,211,.14); padding-top:22px; display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; font-family:"JetBrains Mono"; font-size:12px; letter-spacing:.04em; color:rgba(237,228,211,.55); }
   .foot-bar a{ color:inherit; text-decoration:none; }
   .foot-bar a:hover{ color:var(--hero-bg); }
 
@@ -347,8 +364,9 @@
       <nav class="navpill">
         <a href="#scenes">Работы</a><a href="#price">Прайс</a><a href="#about">О нас</a><a href="#contact">Контакты</a>
       </nav>
-      <a class="hcta" href="#contact">Обсудить проект <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M8 7h9v9"/></svg></a>
     </header>
+
+    <div class="hero-accent" aria-hidden="true"></div>
 
     <div class="center">
       <div class="kick">Веб-студия · сайты для бизнеса · под ключ</div>
@@ -365,9 +383,9 @@
       </h1>
       <p class="sub">Под любую нишу — лендинг или сайт-визитка под ключ. Дизайн, код и запуск за&nbsp;3–5&nbsp;дней.</p>
       <div class="row">
-        <a class="btn btn-fill" id="heroCta" href="#contact">Обсудить проект →</a>
-        <a class="btn btn-ghost" href="#scenes">Смотреть работы</a>
-        <span class="price">от 30к</span>
+        <a class="btn btn-fill" id="heroCta" href="#contact">Обсудить проект
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg>
+        </a>
       </div>
     </div>
 
@@ -451,6 +469,9 @@
 
   <!-- HERO: барабан ниш + magnetic CTA -->
   <script>
+    // при перезагрузке — всегда в начало страницы
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+    window.scrollTo(0, 0);
     (function(){
       var reduceH = matchMedia('(prefers-reduced-motion: reduce)').matches;
       var mouseH  = matchMedia('(hover:hover) and (pointer:fine)').matches;
@@ -485,11 +506,11 @@
     // ===== данные кейсов (порядок = цепочка фонов) =====
     const HERO_BG = '#ece2d0';
     const CASES = [
-      { name:'Soberi Party',    niche:'Дмитров · мастер-классы',  img:'soberi.png',  url:'https://soberi-party-dmitrov.vercel.app', badge:'Первая готовая работа · коммерческий', title:'Soberi Party', fill:'#f6e7e6', glow:'#f0d3d8', stext:'#1b1714' },
-      { name:'SILLAGE',         niche:'Москва · выставка парфюма', img:'sillage.png', url:'https://sillage-expo.vercel.app',          badge:'Концепт · luxury / экспо',             title:'SILLAGE',      fill:'#0e0c0d', glow:'#2a2013', stext:'#f0e7d6' },
-      { name:'Адвокат Соколов', niche:'Юридические услуги',        img:'lawyer.png',  url:'https://lawyer-sokolov.vercel.app',        badge:'Концепт · юр. услуги',                 title:'Соколов',      fill:'#11131a', glow:'#2a2414', stext:'#f0e7d6' },
-      { name:'Кайдзен Авто',    niche:'Москва · автосервис',       img:'kaizen.png',  url:'https://kaizen-teal.vercel.app',           badge:'Концепт · автосервис',                 title:'Kaizen',       fill:'#151414', glow:'#2e1a10', stext:'#f0e7d6' },
-      { name:'Aster Café',      niche:'Кафе · бренд',              img:'cafe.png',    url:'https://cafe-aster.vercel.app',            badge:'Концепт · общепит',                    title:'Aster Café',   fill:'#ece3d2', glow:'#e0d2bb', stext:'#1b1714' }
+      { name:'Soberi Party',    niche:'Дмитров · мастер-классы',  img:'soberi.png',  url:'https://soberi-party-dmitrov.vercel.app', badge:'Первая готовая работа · коммерческий', title:'Soberi Party', fill:'#f6e7e6', glow:'#f0d3d8', stext:'#1b1714', dark:false },
+      { name:'SILLAGE',         niche:'Москва · выставка парфюма', img:'sillage.png', url:'https://sillage-expo.vercel.app',          badge:'Концепт · luxury / экспо',             title:'SILLAGE',      fill:'#0e0c0d', glow:'#2a2013', stext:'#f0e7d6', dark:true },
+      { name:'Адвокат Соколов', niche:'Юридические услуги',        img:'lawyer.png',  url:'https://lawyer-sokolov.vercel.app',        badge:'Концепт · юр. услуги',                 title:'Sokolov',      fill:'#11131a', glow:'#2a2414', stext:'#f0e7d6', dark:true },
+      { name:'Кайдзен Авто',    niche:'Москва · автосервис',       img:'kaizen.png',  url:'https://kaizen-teal.vercel.app',           badge:'Концепт · автосервис',                 title:'Kaizen',       fill:'#151414', glow:'#2e1a10', stext:'#f0e7d6', dark:true },
+      { name:'Aster Café',      niche:'Кафе · бренд',              img:'cafe.png',    url:'https://cafe-aster.vercel.app',            badge:'Концепт · общепит',                    title:'Aster Café',   fill:'#ece3d2', glow:'#e0d2bb', stext:'#1b1714', dark:false }
     ];
 
     // ===== генерация разметки сцен =====
@@ -497,19 +518,18 @@
       const base = i === 0 ? HERO_BG : CASES[i-1].fill;
       const num = String(i+1).padStart(2,'0');
       const rows = [1,0.75,0.5,0.25].map(function(o){ return '<span data-o="'+o+'" style="--o:'+o+'">'+c.title+'</span>'; }).join('');
-      return '<section class="scene" style="--base:'+base+';--fill:'+c.fill+';--glow:'+c.glow+';--stext:'+c.stext+'">'+
+      return '<section class="scene'+(c.dark?' scene-dark':'')+'" style="--base:'+base+';--fill:'+c.fill+';--glow:'+c.glow+';--stext:'+c.stext+'">'+
         '<div class="stage">'+
           '<div class="fill"></div>'+
           '<div class="case-title" aria-hidden="true">'+rows+'</div>'+
           '<div class="scene-label">Кейс '+num+' — '+c.name+'</div>'+
+          '<div class="scene-bar"></div>'+
           '<div class="card-wrap">'+
             '<div class="card-scale"><div class="card-tilt"><div class="card-3d">'+
-              '<div class="face front"><img src="assets/cases/'+c.img+'" alt="'+c.name+' — главный экран"></div>'+
+              '<div class="face front"><span class="badge">'+c.badge+'</span><img src="assets/cases/'+c.img+'" alt="'+c.name+' — главный экран"><div class="card-cap"><b>'+c.name+'</b><span>'+c.niche+'</span></div></div>'+
               '<div class="face back"><div class="back-inner"><span class="back-tag">веб-студия</span><span class="back-mark">Studia</span><span class="back-sub">проектируем · кодим · запускаем</span></div></div>'+
-            '</div>'+
-            '<div class="card-float" aria-hidden="true"><span class="badge">'+c.badge+'</span><div class="card-cap"><b>'+c.name+'</b><span>'+c.niche+'</span></div></div>'+
-            '</div></div>'+
-            '<div class="go-plate"><a href="'+c.url+'" target="_blank" rel="noopener"><span class="go-label">Перейти на сайт</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M8 7h9v9"/></svg></a></div>'+
+            '</div></div></div>'+
+            '<div class="go-plate"><a href="'+c.url+'" target="_blank" rel="noopener"><span class="go-label">Перейти на сайт</span></a></div>'+
           '</div>'+
         '</div>'+
       '</section>';
@@ -522,10 +542,10 @@
       const cardScale = scene.querySelector('.card-scale');
       const card3d = scene.querySelector('.card-3d');
       const cardTilt = scene.querySelector('.card-tilt');
-      const cardFloat = scene.querySelector('.card-float');
       const goPlate = scene.querySelector('.go-plate');
       const goLink = goPlate.querySelector('a');
       const label = scene.querySelector('.scene-label');
+      const bar = scene.querySelector('.scene-bar');
       const hoverZone = scene.querySelector('.card-wrap');
       const spans = [].slice.call(scene.querySelectorAll('.case-title span'));
 
@@ -535,7 +555,7 @@
         text.split('').forEach(function(ch){ const it=document.createElement('i'); if(ch===' ') it.className='sp'; else it.textContent=ch; span.appendChild(it); });
       });
 
-      function platePos(){ const half = cardScale.offsetHeight*1.25/2; const ph = goPlate.offsetHeight||56; return { hidden:half-ph-4, shown:half+10 }; }
+      function platePos(){ const half = cardScale.offsetHeight*1.25/2; const ph = goPlate.offsetHeight||56; return { hidden:half-ph-4, shown:half+24 }; }
 
       // 3D-наклон за курсором
       const TILT = 28;
@@ -546,7 +566,7 @@
           cardTilt.style.transform = 'rotateX('+(-py*TILT).toFixed(2)+'deg) rotateY('+(px*TILT).toFixed(2)+'deg)'; });
         hoverZone.addEventListener('pointerleave', resetTilt);
       }
-      // magnetic + spotlight на «Перейти на сайт»
+      // magnetic + спотлайт за курсором (центр держит flex-обёртка, magnetic поверх и сбрасывается)
       if (mouse){
         goLink.addEventListener('pointermove', function(e){ const r=goLink.getBoundingClientRect();
           goLink.style.transform = 'translate('+((e.clientX-r.left-r.width/2)*0.3).toFixed(1)+'px,'+((e.clientY-r.top-r.height/2)*0.3).toFixed(1)+'px)';
@@ -559,27 +579,20 @@
         gsap.set(cardScale, { y:0, scale:1.2, autoAlpha:1 });
         gsap.set(card3d, { rotateX:0, rotateZ:0 });
         spans.forEach(function(el){ gsap.set(el, { opacity:parseFloat(el.dataset.o), visibility:'visible' }); });
-        gsap.set(goPlate, { xPercent:-50, y:platePos().shown, autoAlpha:1 });
-        gsap.set(cardFloat, { autoAlpha:1 });
+        gsap.set(goPlate, { y:platePos().shown, autoAlpha:1 });
         return;
       }
 
-      gsap.set(cardFloat, { autoAlpha:0 });
-      let floatShown = false;
-      const tl = gsap.timeline({ scrollTrigger:{ trigger:scene, start:'top top', end:'+=360%', scrub:0.8, pin:true, anticipatePin:1,
-        onUpdate:function(self){ const rx=gsap.getProperty(card3d,'rotateX')||0; const m=Math.abs(((rx%360)+360)%360);
-          const show=(m<2.5||m>357.5)&&self.progress>0.78;
-          if(show!==floatShown){ floatShown=show; gsap.to(cardFloat,{autoAlpha:show?1:0,duration:1.0,ease:'sine.inOut',overwrite:true}); } }
-      }});
+      const tl = gsap.timeline({ scrollTrigger:{ trigger:scene, start:'top top', end:'+=360%', scrub:0.8, pin:true, anticipatePin:1 }});
       tl.fromTo(cardScale, { autoAlpha:0 }, { autoAlpha:1, ease:'power1.out', duration:.08 }, 0);
       tl.fromTo(cardScale, { y:-vh()*0.34, scale:.09 }, { y:0, scale:1.25, ease:'power2.out', duration:1 }, 0);
       tl.fromTo(card3d, { rotateX:0, rotateZ:0 }, { rotateX:2520, rotateZ:720, ease:'power2.out', duration:1 }, 0);
       spans.forEach(function(el,i){ const o=parseFloat(el.dataset.o); const order=spans.length-1-i;
         tl.fromTo(el, { opacity:0, visibility:'hidden', yPercent:70 }, { opacity:o, visibility:'visible', yPercent:0, ease:'power2.out', duration:.32 }, order*0.07); });
       tl.fromTo(fill, { clipPath:'circle(0% at 50% 50%)' }, { clipPath:'circle(150% at 50% 50%)', ease:'power2.inOut', duration:.67 }, .15);
-      tl.to(label, { opacity:0, duration:.2, ease:'none' }, .3);
+      tl.to([label, bar], { opacity:0, duration:.2, ease:'none' }, .3);
       const pp = platePos();
-      tl.fromTo(goPlate, { xPercent:-50, y:pp.hidden, autoAlpha:0 }, { xPercent:-50, y:pp.shown, autoAlpha:1, ease:'power3.out', duration:.14 }, .86);
+      tl.fromTo(goPlate, { y:pp.hidden, autoAlpha:0 }, { y:pp.shown, autoAlpha:1, ease:'power3.out', duration:.14 }, .86);
       tl.to(goPlate, { autoAlpha:1, duration:.2 });   // холд-буфер
     }
 
@@ -590,6 +603,8 @@
     gsap.utils.toArray('.rv').forEach(function(el,i){ el.style.transitionDelay = ((i%4)*0.06)+'s'; io.observe(el); });
 
     ScrollTrigger.refresh();
+    window.scrollTo(0, 0);
+    window.addEventListener('load', function(){ window.scrollTo(0, 0); ScrollTrigger.refresh(); });
   </script>
 </body>
 </html>
