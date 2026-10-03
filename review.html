@@ -60,7 +60,7 @@
     font:400 16px "Hanken Grotesk", system-ui, sans-serif; color:var(--ink); background:#fff; border:1px solid var(--line); border-radius:14px; padding:14px 16px; min-height:52px; width:100%;
     transition:border-color .2s, box-shadow .2s;
   }
-  textarea{ min-height:170px; resize:vertical; line-height:1.55; }
+  textarea{ min-height:170px; resize:none; line-height:1.55; }      /* resize:none убирает «ручку» изменения размера в правом нижнем углу */
   input:focus, textarea:focus{ outline:none; border-color:var(--garnet); box-shadow:0 0 0 3px color-mix(in srgb, var(--garnet) 18%, transparent); }
   .hint{ font-size:13.5px; color:var(--ink-2); }
   .count{ font-family:"JetBrains Mono"; font-size:12px; color:var(--ink-2); text-align:right; }
@@ -69,15 +69,41 @@
   [aria-invalid="true"]{ border-color:var(--err) !important; }
 
   /* звёзды */
-  .rate{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
-  .rate-stars{ display:flex; gap:2px; }
-  .rate label{ position:relative; display:grid; place-items:center; width:48px; height:48px; cursor:pointer; border-radius:12px; }
+  .rate{ display:flex; align-items:center; gap:10px 14px; flex-wrap:wrap; }
+  .rate-stars{ display:flex; gap:10px; margin-left:-3px; }        /* -3px: острый край первой звезды встаёт вровень с текстом «Ваша оценка» */
+  .rate label{ position:relative; display:grid; place-items:center; width:34px; height:34px; cursor:pointer; border-radius:8px; }
+  .rate label::after{ content:""; position:absolute; inset:-7px -5px; }       /* зона нажатия 44×48 при видимой звезде 34 px */
   .rate input{ position:absolute; opacity:0; inset:0; margin:0; cursor:pointer; }
   .rate svg{ width:34px; height:34px; fill:transparent; stroke:var(--ink); stroke-width:1.4; stroke-linejoin:round; transition:fill .2s, transform .35s var(--ease), stroke .2s; pointer-events:none; }
   .rate label.on svg{ fill:var(--garnet); stroke:var(--garnet); }
   .rate label:hover svg{ transform:scale(1.12); }
   .rate input:focus-visible + svg{ outline:2px solid var(--garnet); outline-offset:4px; border-radius:6px; }
-  .rate-word{ font-family:"Bricolage Grotesque", sans-serif; font-weight:700; font-size:20px; margin-left:8px; min-width:7ch; }
+  .rate-word{ font-family:"Bricolage Grotesque", sans-serif; font-weight:700; font-size:20px; min-width:7ch; }
+
+  /* выбор аватарки: буквы имени или смайлик + цвет */
+  .avpick{ gap:16px; }
+  .avpick > legend{ margin-bottom:10px; }
+  .av-top{ display:flex; align-items:center; gap:16px; }
+  .avp{ flex:none; width:60px; height:60px; border-radius:50%; display:grid; place-items:center; overflow:hidden; background:var(--avc); color:#fff;
+    font-family:"Bricolage Grotesque", system-ui, sans-serif; font-weight:700; font-size:20px; letter-spacing:.02em; box-shadow:0 0 0 3px #fff, 0 10px 20px -10px rgba(0,0,0,.45); transition:background .25s; }
+  .avp.emoji{ font-size:30px; letter-spacing:0; }
+  .avname{ min-width:0; font-family:"Bricolage Grotesque", system-ui, sans-serif; font-weight:600; font-size:19px; color:var(--avc); transition:color .25s; line-height:1.2; }
+  .avname span{ display:block; overflow-wrap:anywhere; }
+  .avname small{ display:block; margin-top:4px; font:400 13px "Hanken Grotesk", system-ui, sans-serif; color:var(--ink-2); }
+  .seg{ display:flex; gap:4px; padding:4px; border-radius:14px; background:rgba(27,23,20,.06); align-self:flex-start; max-width:100%; }
+  .seg button{ min-height:44px; padding:0 18px; border-radius:10px; font-weight:500; font-size:15px; transition:background .25s, color .25s; }
+  .seg button[aria-checked="true"]{ background:var(--ink); color:var(--bone); }
+  .emojis{ display:grid; grid-template-columns:repeat(auto-fill, minmax(46px, 1fr)); gap:6px; }
+  .emojis[hidden]{ display:none; }
+  .emojis button{ min-height:46px; border-radius:12px; font-size:24px; line-height:1; background:#fff; border:1px solid var(--line); transition:transform .2s var(--ease), border-color .2s, box-shadow .2s, background .2s; }
+  .emojis button:hover{ transform:translateY(-2px); }
+  .emojis button[aria-checked="true"]{ border-color:var(--avc); background:color-mix(in srgb, var(--avc) 9%, #fff); box-shadow:0 0 0 3px color-mix(in srgb, var(--avc) 24%, transparent); }
+  .sublbl{ font-family:"JetBrains Mono"; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-2); margin-bottom:10px; }
+  .colors{ display:flex; flex-wrap:wrap; gap:12px; }
+  .colors button{ position:relative; width:36px; height:36px; border-radius:50%; background:var(--c); box-shadow:0 0 0 1px var(--line); transition:transform .2s var(--ease), box-shadow .2s; }
+  .colors button::after{ content:""; position:absolute; inset:-5px; }
+  .colors button:hover{ transform:scale(1.08); }
+  .colors button[aria-checked="true"]{ box-shadow:0 0 0 2px var(--bone), 0 0 0 4px var(--c); transform:scale(1.08); }
 
   /* согласие */
   .consent{ display:flex; gap:14px; align-items:flex-start; cursor:pointer; font-size:14.5px; line-height:1.5; color:var(--ink-2); }
@@ -177,6 +203,8 @@
     document.title = 'Отзыв о проекте «' + o.product + '» — Airium';
     foot.hidden = false;
     var href = safeUrl(o.siteUrl);
+    // палитра и смайлики приходят с сервера (он же проверяет, что присланное есть в списке)
+    var AV = { colors: (o.avatars && o.avatars.colors && o.avatars.colors.length) ? o.avatars.colors : [{ c: '#9e2b45', n: 'Гранат' }], emojis: (o.avatars && o.avatars.emojis) || [] };
     put(
       '<div class="kick">Отзыв о проекте</div><h1>' + esc(o.product) + '</h1>' +
       (href ? '<a class="site" href="' + esc(href) + '" target="_blank" rel="noopener noreferrer" aria-label="Открыть сайт ' + esc(o.siteLabel) + ' в новой вкладке"><span>' + esc(o.siteLabel) + '</span><i>' + ARROW + '</i></a>' : '') +
@@ -187,10 +215,20 @@
         '</div><span class="rate-word" id="word" aria-live="polite"></span></div><div class="err" id="e-rating" role="alert"></div></fieldset>' +
         '<div class="fld"><label class="lbl" for="text">Ваш отзыв <span class="count" id="cnt">0 / 1500</span></label>' +
           '<textarea id="text" name="text" maxlength="1500" placeholder="Например: как прошла работа, что получилось лучше ожиданий, что бы вы посоветовали другим" aria-describedby="e-text"></textarea><div class="err" id="e-text" role="alert"></div></div>' +
-        '<div class="fld"><label class="lbl" for="name">Как вас подписать</label>' +
-          '<input type="text" id="name" name="name" maxlength="60" autocomplete="name" value="' + esc(o.clientName) + '" placeholder="Имя и фамилия" aria-describedby="e-name"><div class="err" id="e-name" role="alert"></div></div>' +
         '<div class="fld"><label class="lbl" for="role">Чем занимаетесь <span class="opt">необязательно</span></label>' +
           '<input type="text" id="role" name="role" maxlength="80" autocomplete="organization-title" placeholder="Например: владелица цветочной студии"></div>' +
+        '<div class="fld"><label class="lbl" for="name">Как вас подписать</label>' +
+          '<input type="text" id="name" name="name" maxlength="60" autocomplete="name" value="' + esc(o.clientName) + '" placeholder="Имя и фамилия" aria-describedby="e-name"><div class="err" id="e-name" role="alert"></div></div>' +
+        '<fieldset class="fld avpick" id="avpick"><legend>Ваша аватарка в отзыве</legend>' +
+          '<div class="av-top"><span class="avp" id="avp" aria-hidden="true"><span id="avpText"></span></span>' +
+            '<div class="avname"><span id="avpName"></span><small>Так будут выглядеть ваша аватарка и имя в отзыве</small></div></div>' +
+          '<div class="seg" role="radiogroup" aria-label="Что показывать в аватарке">' +
+            '<button type="button" role="radio" data-mode="letters" aria-checked="true">Буквы имени</button>' +
+            '<button type="button" role="radio" data-mode="emoji" aria-checked="false">Смайлик</button></div>' +
+          '<div class="emojis" id="emojis" role="radiogroup" aria-label="Смайлик" hidden>' + AV.emojis.map(function(e){ return '<button type="button" role="radio" aria-checked="false" data-emoji="' + esc(e) + '" aria-label="Смайлик ' + esc(e) + '">' + esc(e) + '</button>'; }).join('') + '</div>' +
+          '<div><div class="sublbl">Цвет</div><div class="colors" role="radiogroup" aria-label="Цвет аватарки">' +
+            AV.colors.map(function(c){ return '<button type="button" role="radio" aria-checked="false" data-color="' + esc(c.c) + '" style="--c:' + esc(c.c) + '" aria-label="' + esc(c.n) + '" title="' + esc(c.n) + '"></button>'; }).join('') + '</div></div>' +
+        '</fieldset>' +
         '<div class="fld"><label class="consent"><input type="checkbox" id="consent" name="consent" aria-describedby="e-consent"><span class="box">' + CHECK + '</span>' +
           '<span>Согласен(на) на публикацию этого отзыва с моим именем на сайте Airium и на обработку этих данных для публикации. Удалим по вашей просьбе в любой момент.</span></label><div class="err" id="e-consent" role="alert"></div></div>' +
         '<div class="hp" aria-hidden="true"><label>Сайт<input type="text" name="website" id="website" tabindex="-1" autocomplete="off"></label></div>' +
@@ -211,7 +249,31 @@
     ta.addEventListener('input', function(){ cnt.textContent = ta.value.length + ' / 1500'; if (ta.value.trim().length >= 15) fieldErr('text', ''); });
 
     f.consent.addEventListener('change', function(){ if (f.consent.checked) fieldErr('consent', ''); });
-    f.name.addEventListener('input', function(){ if (f.name.value.trim().length >= 2) fieldErr('name', ''); });
+
+    /* ----- аватарка: буквы имени или смайлик + цвет; превью обновляется сразу ----- */
+    var av = { mode: 'letters', emoji: AV.emojis[0] || '', color: AV.colors[0].c };
+    var avpick = document.getElementById('avpick'), avp = document.getElementById('avp'), avpText = document.getElementById('avpText'), avpName = document.getElementById('avpName'), emojisBox = document.getElementById('emojis');
+    function initialsOf(n){ return String(n).trim().split(/\s+/).filter(Boolean).slice(0, 2).map(function(w){ return w.charAt(0); }).join('').toUpperCase() || '?'; }
+    function paintAv(){
+      avpick.style.setProperty('--avc', av.color);
+      var emoji = av.mode === 'emoji' && av.emoji;
+      avp.classList.toggle('emoji', !!emoji);
+      avpText.textContent = emoji ? av.emoji : initialsOf(f.name.value);
+      avpName.textContent = f.name.value.trim() || 'Ваше имя';
+      Array.prototype.forEach.call(avpick.querySelectorAll('[data-mode]'), function(b){ b.setAttribute('aria-checked', String(b.dataset.mode === av.mode)); });
+      emojisBox.hidden = av.mode !== 'emoji';
+      Array.prototype.forEach.call(emojisBox.querySelectorAll('[data-emoji]'), function(b){ b.setAttribute('aria-checked', String(b.dataset.emoji === av.emoji)); });
+      Array.prototype.forEach.call(avpick.querySelectorAll('[data-color]'), function(b){ b.setAttribute('aria-checked', String(b.dataset.color === av.color)); });
+    }
+    avpick.addEventListener('click', function(e){
+      var b = e.target.closest('button'); if (!b) return;
+      if (b.dataset.mode){ av.mode = b.dataset.mode; if (av.mode === 'emoji' && !av.emoji && AV.emojis.length) av.emoji = AV.emojis[0]; }
+      if (b.dataset.emoji){ av.emoji = b.dataset.emoji; av.mode = 'emoji'; }
+      if (b.dataset.color) av.color = b.dataset.color;
+      paintAv();
+    });
+    f.name.addEventListener('input', function(){ if (f.name.value.trim().length >= 2) fieldErr('name', ''); paintAv(); });
+    paintAv();
     function fieldErr(k, msg){ var e = document.getElementById('e-' + k), inp = document.getElementById(k); if (e) e.textContent = msg; if (inp) inp.setAttribute('aria-invalid', msg ? 'true' : 'false'); }
     function check(){
       var bad = {}, name = f.name.value.trim(), text = ta.value.trim();
@@ -234,13 +296,14 @@
       var go = document.getElementById('go'), lab = document.getElementById('golabel');
       go.disabled = true; go.classList.add('busy'); lab.textContent = 'Отправляем…';
       fetch('/api/submit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
-        token: token, rating: cur, text: ta.value, name: f.name.value, role: f.role.value, consent: f.consent.checked, website: document.getElementById('website').value
+        token: token, rating: cur, text: ta.value, name: f.name.value, role: f.role.value, consent: f.consent.checked, website: document.getElementById('website').value,
+        avatarColor: av.color, avatarEmoji: (av.mode === 'emoji' && av.emoji) ? av.emoji : ''
       }) }).then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ return { s: r.status, j: j }; }); })
       .then(function(x){
         if (x.s === 200 && x.j.ok) return message('ok', 'Спасибо за отзыв!', 'Он отправлен нам на проверку. После неё отзыв появится на нашем портфолио.');
         if (x.s === 409) return message('ok', 'Отзыв уже отправлен', 'По этой ссылке отзыв уже получен. Спасибо!');
         if (x.s === 410) return message('err', 'Ссылка больше не действует', 'Попросите нас прислать новую ссылку.');
-        if (x.s === 400 && x.j.fields){ showErrors(x.j.fields); }
+        if (x.s === 400 && x.j.fields){ showErrors(x.j.fields); if (x.j.fields.avatar) document.getElementById('formerr').textContent = x.j.fields.avatar; }
         else document.getElementById('formerr').textContent = x.s === 429 ? 'Слишком много попыток. Подождите несколько минут и попробуйте снова.' : 'Не удалось отправить отзыв. Ваш текст сохранён на странице, попробуйте ещё раз.';
         go.disabled = false; go.classList.remove('busy'); lab.textContent = 'Отправить отзыв';
       })

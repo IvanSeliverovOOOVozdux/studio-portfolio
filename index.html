@@ -353,7 +353,7 @@
   @keyframes revOut{ from{ opacity:1; transform:none; } to{ opacity:0; transform:translateY(14px) scale(.96); } }
   .rev-bub{ position:relative; min-width:0; padding:10px 14px 24px; border-radius:6px 18px 18px 18px; background:#f1ede6; border:1px solid rgba(27,23,20,.1); }
   .rev-msg.out .rev-bub{ border-radius:18px 6px 18px 18px; background:var(--garnet); color:#fff; border-color:transparent; }
-  .rev-bub .nm{ display:block; font-weight:600; font-size:14px; color:color-mix(in srgb, var(--c, var(--garnet)) 78%, var(--ink)); }
+  .rev-bub .nm{ display:block; font-weight:600; font-size:14px; color:var(--c, var(--garnet)); }       /* имя того же цвета, что выбрана аватарка */
   .rev-bub .rl{ display:block; font-size:12px; color:var(--ink-2); margin-bottom:6px; }
   .rev-bub p{ font-size:15px; line-height:1.5; overflow-wrap:anywhere; }
   .rev-site{ position:relative; display:inline-flex; align-items:center; gap:9px; max-width:100%; margin-top:10px; padding:4px 5px 4px 13px; border-radius:999px; text-decoration:none; color:var(--garnet);
@@ -382,6 +382,7 @@
   .rev-msg.in .rev-ava{ left:-16px; }
   .rev-msg.out .rev-ava{ right:-16px; background:var(--ink); }
   .rev-ava img{ width:21px; height:21px; object-fit:contain; display:block; }
+  .rev-ava.emoji{ font-size:19px; letter-spacing:0; line-height:1; }
   .rev-typing{ display:inline-flex; gap:5px; padding:14px 16px !important; }
   .rev-typing i{ width:7px; height:7px; border-radius:50%; background:var(--ink-2); animation:revDot 1s infinite ease-in-out; }
   .rev-msg.out .rev-typing i{ background:#fff; }
@@ -743,10 +744,12 @@
     // сообщение клиента: аватарка с инициалами на левом нижнем углу
     function msg(r, i){
       var href = safeUrl(r.url), label = String(r.site || '').trim() || (href ? href.replace(/^https?:\/\//, '').replace(/[\/?#].*$/, '') : '');
-      var el = document.createElement('div'); el.className = 'rev-msg in'; el.style.setProperty('--c', PAL[i % PAL.length]);
+      // аватарка, которую выбрал клиент: цвет (имя в отзыве того же цвета) и смайлик либо буквы имени; без выбора — цвет по умолчанию и буквы
+      var av = r.avatar || {}, avc = /^#[0-9a-fA-F]{6}$/.test(av.c || '') ? av.c : PAL[i % PAL.length], emoji = typeof av.e === 'string' && av.e && av.e.length <= 8 ? av.e : '';
+      var el = document.createElement('div'); el.className = 'rev-msg in'; el.style.setProperty('--c', avc);
       el.innerHTML = '<div class="rev-bub"><b class="nm">' + esc(r.name) + '</b>' + (r.role ? '<span class="rl">' + esc(r.role) + '</span>' : '') + '<p>' + esc(r.text) + '</p>' +
         (href ? '<a class="rev-site" href="' + esc(href) + '" target="_blank" rel="noopener noreferrer" aria-label="Открыть сайт ' + esc(label) + ' в новой вкладке"><span>' + esc(label) + '</span><i>' + EXT + '</i></a>' : '') +
-        '<div class="rev-meta">' + stars(r.rating) + '<time>' + esc(dateFmt(r.date)) + '</time></div></div><span class="rev-ava" aria-hidden="true">' + esc(initials(r.name)) + '</span>';
+        '<div class="rev-meta">' + stars(r.rating) + '<time>' + esc(dateFmt(r.date)) + '</time></div></div><span class="rev-ava' + (emoji ? ' emoji' : '') + '" aria-hidden="true">' + esc(emoji || initials(r.name)) + '</span>';
       return el;
     }
     // ответ студии (готовый текст с подставленным именем приходит с сервера): аватарка-логотип на правом нижнем углу

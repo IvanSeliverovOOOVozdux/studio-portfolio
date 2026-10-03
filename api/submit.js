@@ -5,6 +5,7 @@ const { cfg } = require('./_lib/config');
 const tg = require('./_lib/tg');
 const { cardText, cardKeyboard } = require('./_lib/format');
 const { wrap, ipHash } = require('./_lib/http');
+const { normalize: normalizeAvatar } = require('./_lib/avatars');
 
 const clean = (s, max) => String(s == null ? '' : s)
   .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F‪-‮⁦-⁩]/g, '')   // управляющие и bidi-символы
@@ -32,9 +33,11 @@ module.exports = wrap(async (req, res) => {
   if (!Number.isInteger(rating) || rating < 1 || rating > 5) fields.rating = 'Поставьте оценку от 1 до 5';
   if (text.length < 15) fields.text = 'Напишите хотя бы пару предложений (от 15 символов)';
   if (b.consent !== true) fields.consent = 'Нужно согласие на публикацию';
+  const av = normalizeAvatar(b.avatarColor, b.avatarEmoji);
+  if (av.error) fields.avatar = av.error;
   if (Object.keys(fields).length) return res.status(400).json({ ok: false, error: 'validation', fields });
 
-  const review = await submitReview(order, { name, role, rating, text });
+  const review = await submitReview(order, { name, role, rating, text, avatar: av.value });
   if (!review) return res.status(409).json({ ok: false, error: 'submitted' });
 
   // карточка в общий чат на проверку; если Telegram недоступен — отзыв всё равно сохранён (виден в /history)

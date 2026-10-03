@@ -55,7 +55,7 @@ async function listOpenOrders(limit){
 }
 
 /* ---------- отзывы ---------- */
-async function submitReview(order, { name, role, rating, text }){
+async function submitReview(order, { name, role, rating, text, avatar }){
   // атомарно: вторая отправка по той же ссылке вернёт null
   const first = await redis('SET', 'used:' + order.token, '1', 'NX');
   if (!first) return null;
@@ -63,7 +63,7 @@ async function submitReview(order, { name, role, rating, text }){
     const now = Date.now(), id = newId();
     const review = {
       id, token: order.token, product: order.product, siteUrl: order.siteUrl, siteLabel: order.siteLabel,
-      name, role, rating, text, createdAt: now, status: 'pending', decidedBy: null, decidedAt: null, chatId: null, messageId: null
+      name, role, rating, text, avatar: avatar || null, createdAt: now, status: 'pending', decidedBy: null, decidedAt: null, chatId: null, messageId: null
     };
     await redis('SET', 'review:' + id, JSON.stringify(review));
     await redis('ZADD', 'z:reviews', now, id);

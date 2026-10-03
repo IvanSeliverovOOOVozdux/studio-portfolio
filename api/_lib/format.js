@@ -12,14 +12,22 @@ function footer(r){
   if (r.status === 'hidden')   return `🙈 <b>Скрыт с сайта</b> · ${esc(r.decidedBy.name)} · ${fmt(r.decidedAt)}`;
   return '';
 }
+// Какую аватарку выбрал клиент: смайлик или буквы имени, и цвет
+const initialsOf = name => String(name).trim().split(/\s+/).slice(0, 2).map(w => w.charAt(0)).join('').toUpperCase() || '?';
+function avatarLine(r){
+  if (!r.avatar) return null;
+  const { colorName } = require('./avatars');
+  return `Аватар: ${r.avatar.e ? r.avatar.e : 'буквы ' + esc(initialsOf(r.name))} · ${esc(colorName(r.avatar.c))}`;
+}
 function cardText(r){
   const lines = [
     r.status === 'pending' ? '<b>Новый отзыв на проверку</b>' : '<b>Отзыв</b>',
     `Проект: <b>${esc(r.product)}</b>${r.siteLabel ? ' · ' + esc(r.siteLabel) : ''}`,
     `Клиент: ${esc(r.name)}${r.role ? ', ' + esc(r.role) : ''}`,
     `Оценка: ${stars(r.rating)}`,
+    avatarLine(r),
     '', `«${esc(r.text)}»`
-  ];
+  ].filter(x => x !== null);
   const f = footer(r); if (f) lines.push('', f);
   return lines.join('\n');
 }

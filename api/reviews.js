@@ -14,7 +14,7 @@ module.exports = async (req, res) => {
     return res.status(200).json({
       ok: true,
       reviews: rows.map(r => ({
-        id: r.id, name: r.name, role: r.role, rating: r.rating, text: r.text,
+        id: r.id, name: r.name, role: r.role, rating: r.rating, text: r.text, avatar: r.avatar || null,
         site: r.siteLabel, url: r.siteUrl, product: r.product, date: r.decidedAt || r.createdAt,
         reply: R.replyFor(templates, r)
       }))
