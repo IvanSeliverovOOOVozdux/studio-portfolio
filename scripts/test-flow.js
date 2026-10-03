@@ -99,20 +99,55 @@ const ok = (name, cond, extra) => { if (!cond) fails++; console.log((cond ? 'OK 
   await t.press(1001, 'a:' + id1, 101);
   ok('вернуть на сайт: снова в списке', (await (await t.get('/api/reviews')).json()).reviews.length === 1);
 
-  /* --- лайки --- */
-  const like = (visitor, on, id) => t.post('/api/like', { id: id || id1, visitor, on }, '10.0.0.7').then(r => r.json().then(j => ({ s: r.status, j })));
-  let L = await like('visitor-aaaaaaaa', true);
-  ok('лайк: первый посетитель → 1', L.s === 200 && L.j.count === 1 && L.j.liked === true, L);
-  L = await like('visitor-aaaaaaaa', true);
-  ok('лайк: повтор того же посетителя не накручивает (всё ещё 1)', L.j.count === 1, L);
-  L = await like('visitor-bbbbbbbb', true);
-  ok('лайк: второй посетитель → 2', L.j.count === 2, L);
-  L = await like('visitor-aaaaaaaa', false);
-  ok('лайк: снятие → 1', L.j.count === 1 && L.j.liked === false, L);
-  ok('лайк: в публичном списке счётчик = 1', (await (await t.get('/api/reviews')).json()).reviews[0].likes === 1);
-  ok('лайк: короткий ID посетителя → 400', (await like('x', true)).s === 400);
-  ok('лайк: неодобренный/чужой отзыв → 404', (await like('visitor-cccccccc', true, id2)).s === 404);
-  ok('лайк: битый id → 400', (await like('visitor-cccccccc', true, 'zzzz')).s === 400);
+  /* --- лайков больше нет: эндпоинт удалён, в публичных данных их нет --- */
+  ok('лайков нет: /api/like удалён (404)', (await t.post('/api/like', { id: id1, visitor: 'visitor-aaaaaaaa', on: true }, '10.0.0.7')).status === 404);
+  const pubNow = (await (await t.get('/api/reviews')).json()).reviews[0];
+  ok('лайков нет: в публичном отзыве нет поля likes', !('likes' in pubNow), Object.keys(pubNow));
+
+  /* --- готовые ответы студии: нейтральны по роду, имя подставляется, хранятся в базе --- */
+  const R = require('../api/_lib/replies');
+  const GENDER = /(^|[^а-яё])(рад|довол(ен|ьна)|уверен|уверена|благодарен|благодарна|готов|готова)([^а-яё]|$)/i;
+  const all = R.DEFAULTS.positive.concat(R.DEFAULTS.critical);
+  ok('стандартные ответы: ни одной формы рода (рад/довольна и т. п.)', all.every(s => !GENDER.test(s)), all.filter(s => GENDER.test(s)));
+  ok('стандартные ответы: в каждом есть {name}', all.every(s => /\{name\}/.test(s)));
+  ok('подстановка имени: «Анна Иванова» → «Анна», «Игорь Таранов» → «Игорь»', R.fill('Спасибо, {name}!', 'Анна Иванова') === 'Спасибо, Анна!' && R.fill('{имя}, привет', '  Игорь   Таранов ') === 'Игорь, привет');
+  ok('подбор ответа стабилен: один и тот же отзыв всегда получает один ответ', R.pick(R.DEFAULTS.positive, 'a1b2c3d4e5') === R.pick(R.DEFAULTS.positive, 'a1b2c3d4e5'));
+  ok('в публичном отзыве есть готовый ответ с именем клиента и без шаблонных скобок', typeof pubNow.reply === 'string' && pubNow.reply.includes('Марина') && !/\{/.test(pubNow.reply), pubNow.reply);
+  ok('ответ для отзыва 5★ взят из «хвалебных»', R.DEFAULTS.positive.some(s => R.fill(s, 'Марина Литвинова') === pubNow.reply));
+
+  await t.say(1001, '/replies');
+  ok('/replies показывает обе группы', /4–5★/.test(t.lastSent().body.text) || /4–5★/.test(t.sent().slice(-2)[0].body.text));
+  await t.say(1001, '/addreply 5 Мы очень ценим ваш отзыв, {name}! Спасибо, что выбрали нас.');
+  ok('/addreply 5: добавлен ответ с примером подстановки', /Добавил/.test(t.lastSent().body.text) && /Анна/.test(t.lastSent().body.text), t.lastSent().body.text);
+  await t.say(1001, '/addreply 5 Мы очень ценим ваш отзыв, {name}! Спасибо, что выбрали нас.');
+  ok('/addreply: дубль отклонён', /уже есть/.test(t.lastSent().body.text));
+  await t.say(1001, '/addreply 5 Я очень рад, что вам понравилось!');
+  ok('/addreply: предупреждение про форму рода и про отсутствие {name}', /форма рода/.test(t.lastSent().body.text) && /нет \{name\}/.test(t.lastSent().body.text), t.lastSent().body.text);
+  await t.say(1001, '/addreply 5 коротко');
+  ok('/addreply: слишком короткий текст отклонён', /от 10 до 300/.test(t.lastSent().body.text));
+  await t.say(1001, '/addreply текст без цифры');
+  ok('/addreply: без цифры группы — подсказка формата', /Формат/.test(t.lastSent().body.text));
+  let tpl = await R.getTemplates();
+  ok('ответы сохранились в базе (positive стало ' + tpl.positive.length + ')', tpl.positive.length === R.DEFAULTS.positive.length + 2);
+  await t.say(1001, '/delreply 5 ' + tpl.positive.length);
+  await t.say(1001, '/delreply 5 ' + (tpl.positive.length - 1));
+  tpl = await R.getTemplates();
+  ok('/delreply: два добавленных ответа удалены', tpl.positive.length === R.DEFAULTS.positive.length);
+  await t.say(1001, '/delreply 5 999');
+  ok('/delreply: нет такого номера', /Нет ответа/.test(t.lastSent().body.text));
+  await t.say(9999, '/addreply 5 Чужой пытается добавить ответ, {name}.');
+  tpl = await R.getTemplates();
+  ok('посторонний не может менять ответы', tpl.positive.length === R.DEFAULTS.positive.length);
+  await t.say(1001, '/resetreplies');
+  ok('/resetreplies возвращает стандартные', /стандартные/.test(t.lastSent().body.text));
+  // критичный отзыв (2★) получает ответ из «критичных»
+  await t.say(1002, '/new Сайт тест | critical-test.ru | Олег');
+  const tokenC = tokenOf(t.lastSent().body.text);
+  await t.post('/api/submit', { token: tokenC, rating: 2, name: 'Олег Смирнов', role: '', text: 'Были задержки по срокам, хотелось бы быстрее отвечали.', consent: true }, '10.0.0.8');
+  const idC = reviewIdOf(t.lastSent());
+  await sleep(2100); await t.press(1003, 'a:' + idC, 110);
+  const critical = (await (await t.get('/api/reviews')).json()).reviews.find(x => x.id === idC);
+  ok('отзыв 2★ получает ответ из «критичных», не поздравительный', critical && R.DEFAULTS.critical.some(s => R.fill(s, 'Олег Смирнов') === critical.reply), critical);
 
   /* --- ссылки: список и закрытие --- */
   await t.say(1003, '/new Сайт юриста | lawyer-sokolov.vercel.app | -');

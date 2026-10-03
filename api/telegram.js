@@ -5,6 +5,7 @@ const redis = require('./_lib/redis');
 const tg = require('./_lib/tg');
 const { cfg } = require('./_lib/config');
 const S = require('./_lib/store');
+const R = require('./_lib/replies');
 const F = require('./_lib/format');
 const { safeEqual } = require('./_lib/http');
 
@@ -17,7 +18,13 @@ const HELP = [
   '/cancel — отменить ввод',
   '',
   'Быстро одной строкой:',
-  '<code>/new Название проекта | https://сайт.ру | Имя клиента</code>'
+  '<code>/new Название проекта | https://сайт.ру | Имя клиента</code>',
+  '',
+  '<b>Ответы студии под отзывами на сайте</b>',
+  '/replies — список готовых ответов',
+  '<code>/addreply 5 Текст с {name}</code> — добавить ответ для отзывов 4–5★ (цифра 3 — для 1–3★)',
+  '<code>/delreply 5 номер</code> — удалить ответ (цифра 3 — из критичных)',
+  '/resetreplies — вернуть стандартные'
 ].join('\n');
 
 const personName = u => [u.first_name, u.last_name].filter(Boolean).join(' ') || (u.username ? '@' + u.username : String(u.id));
@@ -64,6 +71,10 @@ async function onMessage(m){
     if (name === 'cancel'){ await redis('DEL', key); return void await say(ctx, 'Ввод отменён.'); }
     if (name === 'history') return void await sendHistory(ctx, 0);
     if (name === 'orders') return void await sendOrders(ctx);
+    if (name === 'replies') return void await sendReplies(ctx);
+    if (name === 'addreply') return void await addReply(ctx, args);
+    if (name === 'delreply') return void await delReply(ctx, args);
+    if (name === 'resetreplies'){ await R.resetTemplates(); return void await say(ctx, 'Вернул стандартные ответы. Список: /replies'); }
     if (name === 'new') return void await startNew(ctx, from, args, key);
     return void await say(ctx, 'Не знаю такой команды.\n\n' + HELP);
   }
@@ -146,6 +157,41 @@ async function sendOrders(ctx){
   await say(ctx, '<b>Ссылки, которые ждут отзыва</b>\n\n' + open.map(o =>
     `• <b>${F.esc(o.product)}</b>${o.clientName ? ' · ' + F.esc(o.clientName) : ''}\n  создана ${F.fmt(o.createdAt)} · ${F.esc(o.by ? o.by.name : '')}\n  ${base ? base + '/r/' + o.token : o.token}`
   ).join('\n\n'));
+}
+
+/* ---------- ответы студии под отзывами (хранятся в базе) ---------- */
+const REPLY_HINT = 'Пишите на «вы» и без форм рода («рад/рада», «доволен/довольна»): тогда ответ подходит и женским, и мужским именам. Имя клиента подставится вместо {name}.';
+const GENDER_RE = /(^|[^а-яё])(рад|довол(ен|ьна)|уверен|уверена|благодарен|благодарна|готов|готова)([^а-яё]|$)/i;
+const replyGroup = d => (d === '5' ? 'positive' : 'critical');
+
+async function sendReplies(ctx){
+  const t = await R.getTemplates();
+  const fmt = (title, list) => `<b>${title}</b>\n` + list.map((s, i) => `${i + 1}. ${F.esc(s)}`).join('\n');
+  await say(ctx, fmt('Для отзывов 4–5★ (в командах цифра 5)', t.positive));
+  await say(ctx, fmt('Для отзывов 1–3★ (в командах цифра 3)', t.critical) + '\n\n' + F.esc(REPLY_HINT));
+}
+async function addReply(ctx, args){
+  const m = args.match(/^([53])\s+([\s\S]+)$/);
+  if (!m) return void await say(ctx, 'Формат: <code>/addreply 5 Текст ответа с {name}</code>\nЦифра 5 — для отзывов 4–5★, цифра 3 — для отзывов 1–3★.');
+  const text = m[2].trim().replace(/\s+/g, ' ');
+  if (text.length < 10 || text.length > 300) return void await say(ctx, 'Ответ должен быть от 10 до 300 символов.');
+  const g = replyGroup(m[1]), t = await R.getTemplates();
+  if (t[g].length >= 30) return void await say(ctx, 'Ответов уже 30, удалите лишние: /delreply');
+  if (t[g].some(x => x.toLowerCase() === text.toLowerCase())) return void await say(ctx, 'Такой ответ уже есть.');
+  t[g].push(text); await R.saveTemplates(t);
+  const notes = [];
+  if (!/\{(name|имя)\}/i.test(text)) notes.push('В тексте нет {name}, имя клиента подставляться не будет.');
+  if (GENDER_RE.test(text)) notes.push('Похоже, в тексте есть форма рода (рад/доволен и т. п.). Лучше переписать на «мы» и «вы», чтобы подходило любому имени.');
+  await say(ctx, `Добавил (${g === 'positive' ? '4–5★' : '1–3★'}, №${t[g].length}).\nПример: «${F.esc(R.fill(text, 'Анна Иванова'))}»` + (notes.length ? '\n\n' + notes.map(F.esc).join('\n') : ''));
+}
+async function delReply(ctx, args){
+  const m = args.match(/^([53])\s+(\d+)$/);
+  if (!m) return void await say(ctx, 'Формат: <code>/delreply 5 номер</code> (цифра 5 — ответы для 4–5★, цифра 3 — для 1–3★). Номера: /replies');
+  const g = replyGroup(m[1]), t = await R.getTemplates(), n = Number(m[2]);
+  if (n < 1 || n > t[g].length) return void await say(ctx, 'Нет ответа с таким номером. Список: /replies');
+  if (t[g].length <= 1) return void await say(ctx, 'Это последний ответ в группе, удалить нельзя. Сначала добавьте другой: /addreply');
+  const [gone] = t[g].splice(n - 1, 1); await R.saveTemplates(t);
+  await say(ctx, `Удалил: «${F.esc(gone)}»`);
 }
 
 /* ---------- кнопки ---------- */

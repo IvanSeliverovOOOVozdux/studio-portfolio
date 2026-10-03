@@ -1,5 +1,7 @@
 'use strict';
-// Блок отзывов на портфолио: скрыт без отзывов, появляется после одобрения, лайки живые. Запуск: node scripts/test-portfolio.js [папка для скриншотов]
+// Блок отзывов на портфолио: скрыт без отзывов, после одобрения появляется между «Как мы работаем» и «Прайс»,
+// цикл с «печатает…», ответами студии, обратной анимацией ухода, паузой при наведении, стрелками и нумерацией.
+// Запуск: node scripts/test-portfolio.js [папка для скриншотов]
 const path = require('path');
 const puppeteer = require('puppeteer-core');
 const { boot } = require('./harness');
@@ -14,50 +16,90 @@ const ok = (n, c, x) => { if (!c) fails++; console.log((c ? 'OK   ' : 'FAIL ') +
   const browser = await puppeteer.launch({ executablePath: EDGE, headless: 'new' });
   const p = await browser.newPage();
   const errs = []; p.on('pageerror', e => errs.push(e.message));
-  await p.setViewport({ width: 1440, height: 900 });
-  const open = async () => { await p.goto(t.BASE + '/', { waitUntil: 'networkidle0' }); await sleep(800); };
+  await p.setViewport({ width: 1440, height: 1000 });
+  const open = async () => { await p.goto(t.BASE + '/', { waitUntil: 'networkidle0' }); await sleep(600); };
 
   await open();
-  ok('без отзывов: блок скрыт', await p.$eval('#reviews', e => e.hidden));
-  ok('без отзывов: пункт меню «Отзывы» скрыт', await p.$eval('#navReviews', e => e.hidden));
+  ok('без отзывов: блок и пункт меню скрыты', await p.$eval('#reviews', e => e.hidden) && await p.$eval('#navReviews', e => e.hidden));
 
-  // заказ → отзыв → одобрение
-  await t.say(1001, '/new Сайт кофейни «Мякиш» | myakish.ru | Денис Орлов');
-  const token = (t.lastSent().body.text.match(/\/r\/([\w-]+)/) || [])[1];
-  await t.post('/api/submit', { token, rating: 5, name: 'Денис Орлов', role: 'Шеф-пекарь', text: 'Сделали быстро и аккуратно, гости сразу заметили новое меню.', consent: true }, '10.0.0.5');
-  const card = t.lastSent(); const rid = card.body.reply_markup.inline_keyboard[0][0].callback_data.split(':')[1];
-  ok('отзыв до одобрения на сайте не виден', (await (await t.get('/api/reviews')).json()).reviews.length === 0);
-  await t.press(1002, 'a:' + rid, 101);
+  // три отзыва: мужское имя, женское, критичный
+  const mk = async (cmd, rating, name, text, ip) => {
+    await t.say(1001, cmd); const token = (t.lastSent().body.text.match(/\/r\/([\w-]+)/) || [])[1];
+    await t.post('/api/submit', { token, rating, name, role: 'Тест', text, consent: true }, ip);
+    const rid = t.lastSent().body.reply_markup.inline_keyboard[0][0].callback_data.split(':')[1];
+    await sleep(2100); await t.press(1002, 'a:' + rid, 100 + Math.floor(Math.random() * 1e4)); return rid;
+  };
+  await mk('/new Сайт кофейни «Мякиш» | myakish.ru | Денис', 5, 'Денис Орлов', 'Сделали быстро и аккуратно, гости сразу заметили новое меню.', '10.0.0.5');
+  await mk('/new Цветочная студия | len-polyn.ru | Марина', 5, 'Марина Литвинова', 'Сайт заработал в тот же вечер, как мы его запустили, заявки пошли с телефона.', '10.0.0.6');
+  await mk('/new Сайт юриста | weiss-law.ru | Олег', 2, 'Олег Смирнов', 'Были задержки по срокам, хотелось бы, чтобы отвечали быстрее.', '10.0.0.7');
+  const api = (await (await t.get('/api/reviews')).json()).reviews;
+  ok('API отдаёт 3 отзыва, у каждого готовый ответ с именем, без шаблонных скобок и без лайков', api.length === 3 && api.every(r => r.reply && !/\{/.test(r.reply) && r.reply.includes(r.name.split(' ')[0]) && !('likes' in r)), api.map(r => r.reply));
 
   await open();
-  await p.$eval('#reviews', e => e.scrollIntoView({ block: 'center' })); await sleep(3500);
-  ok('после одобрения блок виден', !(await p.$eval('#reviews', e => e.hidden)));
-  ok('пункт меню «Отзывы» появился', !(await p.$eval('#navReviews', e => e.hidden)));
+  await p.$eval('#reviews', e => e.scrollIntoView({ block: 'center' }));
+  const ev = async () => p.evaluate(() => window.__e);
+  await p.evaluate(() => {
+    window.__e = []; const t0 = performance.now(); const body = document.querySelector('#revBody');
+    new MutationObserver(ms => ms.forEach(m => {
+      m.addedNodes.forEach(n => { if (n.nodeType === 1 && n.classList.contains('rev-msg')) window.__e.push({ at: Math.round(performance.now() - t0), ev: '+ ' + (n.classList.contains('out') ? 'студия' : 'клиент') + (n.querySelector('.rev-typing') ? ' печатает' : ' сообщение'), name: (n.querySelector('.nm') || {}).textContent || '', text: (n.querySelector('p') || {}).textContent || '' }); });
+      if (m.type === 'attributes' && m.target.classList && m.target.classList.contains('leaving') && !m.target.__s) { m.target.__s = 1; window.__e.push({ at: Math.round(performance.now() - t0), ev: 'УХОДИТ', anim: getComputedStyle(m.target).animationName, delay: getComputedStyle(m.target).animationDelay }); }
+      if (m.type === 'childList' && m.removedNodes.length && !body.querySelector('.rev-msg')) window.__e.push({ at: Math.round(performance.now() - t0), ev: 'экран пуст' });
+    })).observe(body, { childList: true, attributes: true, subtree: true, attributeFilter: ['class'] });
+  });
+  await sleep(300);
+  const wait = async (f, ms) => { for (let i = 0; i < (ms || 9000) / 50; i++) { if (await f()) return true; await sleep(50); } return false; };
+  const counter = () => p.$eval('#revCount', e => e.textContent);
+  const lastClient = () => p.evaluate(() => { const m = document.querySelector('#revBody .rev-msg.in:not(:has(.rev-typing)) .nm'); return m ? m.textContent : null; });
+
+  ok('блок появился после одобрения; пункт меню «Отзывы» показан', !(await p.$eval('#reviews', e => e.hidden)) && !(await p.$eval('#navReviews', e => e.hidden)));
   const order = await p.evaluate(() => { const y = id => document.getElementById(id).getBoundingClientRect().top + scrollY; return { about: y('about'), reviews: y('reviews'), price: y('price') }; });
   ok('порядок: «Как мы работаем» → «Отзывы» → «Прайс»', order.about < order.reviews && order.reviews < order.price, order);
-  const text = await p.$eval('#revBody', e => e.textContent);
-  ok('отзыв показан: имя, роль, текст', /Денис Орлов/.test(text) && /Шеф-пекарь/.test(text) && /гости сразу заметили/.test(text));
-  const chip = await p.$eval('#revBody a.rev-site', e => ({ h: e.href, t: e.target, r: e.rel, label: e.textContent.trim() }));
-  ok('плашка сайта клиента: myakish.ru, новая вкладка, noopener', chip.h.startsWith('https://myakish.ru') && chip.t === '_blank' && /noopener/.test(chip.r) && chip.label === 'myakish.ru', chip);
-  ok('в конце есть приглашение «Заказывали у нас сайт?»', /Заказывали у нас сайт/.test(text));
-  await p.screenshot({ path: path.join(OUT, 'portfolio-reviews-desktop.png') });
+  ok('панель стрелок видна, номер «01/03»', await wait(async () => (await counter()) === '01/03', 4000) && !(await p.$eval('#revNav', e => e.hidden)));
+  ok('первым играет самый новый отзыв (Олег Смирнов, критичный)', await wait(async () => (await lastClient()) === 'Олег Смирнов', 4000), await lastClient());
+  await wait(async () => (await ev()).some(x => x.ev === '+ студия сообщение'), 5000);
+  let e = await ev();
+  const reply1 = e.find(x => x.ev === '+ студия сообщение');
+  ok('ответ студии обращается по имени и подходит под критичный отзыв', reply1 && reply1.text.includes('Олег') && /честн|откровен|поделились|ценим/.test(reply1.text), reply1);
+  const d = (a, b) => (e.find(x => x.ev === b) || {}).at - (e.find(x => x.ev === a) || {}).at;
+  ok('«печатает…» клиент ≈ 0,7 с (' + d('+ клиент печатает', '+ клиент сообщение') + ' мс), студия ≈ 0,88 с (' + d('+ студия печатает', '+ студия сообщение') + ' мс)', Math.abs(d('+ клиент печатает', '+ клиент сообщение') - 700) < 150 && Math.abs(d('+ студия печатает', '+ студия сообщение') - 880) < 150);
+  const g = await p.evaluate(() => { const r = e => { const x = e.getBoundingClientRect(); return { l: x.left, r: x.right, cx: x.left + x.width / 2, cy: x.top + x.height / 2, b: x.bottom }; }; const m = document.querySelector('.rev-msg.in:not(:has(.rev-typing))'), o = document.querySelector('.rev-msg.out:not(:has(.rev-typing))'); return { inB: r(m.querySelector('.rev-bub')), inA: r(m.querySelector('.rev-ava')), outB: r(o.querySelector('.rev-bub')), outA: r(o.querySelector('.rev-ava')), logo: !!o.querySelector('.rev-ava img') }; });
+  const near = (a, b) => Math.abs(a - b) < 22;
+  ok('аватарка клиента на левом нижнем углу, студии (логотип) на правом нижнем', near(g.inA.cx, g.inB.l) && near(g.inA.cy, g.inB.b) && near(g.outA.cx, g.outB.r) && near(g.outA.cy, g.outB.b) && g.logo, g);
+  await p.screenshot({ path: path.join(OUT, 'portfolio-new-chat.png') });
 
-  // лайк
-  const likeState = () => p.$eval('.rev-like', e => ({ on: e.getAttribute('aria-pressed') === 'true', n: +e.querySelector('span').textContent }));
-  ok('лайки: старт 0', (await likeState()).n === 0);
-  await p.$eval('.rev-like', e => e.click()); await sleep(600);
-  let s = await likeState(); ok('лайк: нажат, счётчик 1', s.on && s.n === 1, s);
-  ok('лайк записан на сервере', (await (await t.get('/api/reviews')).json()).reviews[0].likes === 1);
-  await open(); await p.$eval('#reviews', e => e.scrollIntoView({ block: 'center' })); await sleep(3500);
-  s = await likeState(); ok('после перезагрузки лайк сохранён (нажат, 1)', s.on && s.n === 1, s);
-  await p.$eval('.rev-like', e => e.click()); await sleep(600);
-  s = await likeState(); ok('повторный клик снимает лайк (0)', !s.on && s.n === 0, s);
+  // пауза при наведении
+  const box = await (await p.$('#revChat')).boundingBox();
+  await p.mouse.move(box.x + box.width / 2, box.y + 150);
+  await sleep(4500);
+  e = await ev();
+  ok('мышь над окном: пара держится больше 4 с и не уходит', !e.some(x => x.ev === 'УХОДИТ'));
+  await p.mouse.move(20, 20); const leftAt = await p.evaluate(() => Math.round(performance.now()));
+  ok('курсор ушёл: через ≈ 2 с оба сообщения одновременно уходят обратной анимацией (revOut, без задержки)', await wait(async () => (await ev()).filter(x => x.ev === 'УХОДИТ').length >= 2, 3500));
+  e = await ev(); const lv = e.filter(x => x.ev === 'УХОДИТ');
+  ok('уход: оба сообщения, анимация revOut, delay 0s', lv.length >= 2 && lv.every(x => x.anim === 'revOut' && x.delay === '0s'), lv);
+  ok('после ухода экран очищается и идёт следующий отзыв (02/03, Марина Литвинова)', await wait(async () => (await counter()) === '02/03' && (await lastClient()) === 'Марина Литвинова', 6000), [await counter(), await lastClient()]);
+  const m2 = await wait(async () => (await ev()).some(x => x.ev === '+ студия сообщение' && x.text.includes('Марина')), 6000);
+  ok('у Марины (5★) ответ хвалебный, с её именем', m2);
+
+  // стрелки
+  await p.$eval('[data-nav="1"]', b => b.click());
+  ok('«вперёд»: 03/03, Денис Орлов', await wait(async () => (await counter()) === '03/03' && (await lastClient()) === 'Денис Орлов', 8000), [await counter(), await lastClient()]);
+  await p.$eval('[data-nav="1"]', b => b.click());
+  ok('«вперёд» с последнего замыкает круг: 01/03', await wait(async () => (await counter()) === '01/03', 8000), await counter());
+  await p.$eval('[data-nav="-1"]', b => b.click());
+  ok('«назад» с первого: 03/03', await wait(async () => (await counter()) === '03/03', 8000), await counter());
+
+  // ссылка на сайт клиента и отсутствие лайков
+  ok('плашка сайта клиента: новая вкладка, noopener', await wait(async () => !!(await p.$('#revBody a.rev-site')), 4000) && await p.$eval('#revBody a.rev-site', a => a.target === '_blank' && /noopener/.test(a.rel)));
+  ok('лайков на странице нет: ни кнопок, ни слов, ни обращений к /api/like', await p.evaluate(() => !document.querySelector('.rev-like, .react') && !/лайк/i.test(document.body.innerText)));
+  ok('следы старых лайков в браузере удалены', await p.evaluate(() => { localStorage.setItem('airium-likes:v1', '{}'); localStorage.setItem('airium-visitor:v1', 'x'); return true; }) && await (async () => { await open(); return p.evaluate(() => localStorage.getItem('airium-likes:v1') === null && localStorage.getItem('airium-visitor:v1') === null); })());
 
   // телефон
   await p.setViewport({ width: 390, height: 844, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
-  await open(); await p.$eval('#reviews', e => e.scrollIntoView({ block: 'start' })); await sleep(3500);
+  await open(); await p.$eval('#reviews', e => e.scrollIntoView({ block: 'start' })); await sleep(3800);
   ok('телефон: нет горизонтального скролла', (await p.evaluate(() => document.documentElement.scrollWidth - innerWidth)) === 0);
-  await p.screenshot({ path: path.join(OUT, 'portfolio-reviews-mobile.png') });
+  ok('телефон: кнопки-стрелки не меньше 44 px', await p.$$eval('.rev-arrow', a => a.every(b => b.getBoundingClientRect().width >= 44 && b.getBoundingClientRect().height >= 44)));
+  await p.screenshot({ path: path.join(OUT, 'portfolio-new-chat-mobile.png') });
 
   ok('ошибок JS нет', errs.length === 0, errs);
   await browser.close(); t.stop();

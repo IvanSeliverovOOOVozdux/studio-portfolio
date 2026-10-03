@@ -63,7 +63,7 @@ async function submitReview(order, { name, role, rating, text }){
     const now = Date.now(), id = newId();
     const review = {
       id, token: order.token, product: order.product, siteUrl: order.siteUrl, siteLabel: order.siteLabel,
-      name, role, rating, text, createdAt: now, status: 'pending', decidedBy: null, decidedAt: null, chatId: null, messageId: null, likes: 0
+      name, role, rating, text, createdAt: now, status: 'pending', decidedBy: null, decidedAt: null, chatId: null, messageId: null
     };
     await redis('SET', 'review:' + id, JSON.stringify(review));
     await redis('ZADD', 'z:reviews', now, id);
@@ -91,16 +91,6 @@ async function listApproved(limit){
   return (await redis('MGET', ...ids.map(i => 'review:' + i))).map(parse).filter(r => r && r.status === 'approved');
 }
 
-/* ---------- лайки: множество посетителей на отзыв (lk:<id>), счётчик = размер множества ---------- */
-async function likeCounts(ids){
-  if (!ids.length) return [];
-  return (await redis.pipeline(ids.map(i => ['SCARD', 'lk:' + i]))).map(Number);
-}
-async function setLike(id, visitor, on){
-  await redis(on ? 'SADD' : 'SREM', 'lk:' + id, visitor);
-  return Number(await redis('SCARD', 'lk:' + id));
-}
-
 /* ---------- прочее ---------- */
 async function rateLimit(key, limit, windowSec){
   const n = Number(await redis('INCR', key));
@@ -112,5 +102,5 @@ const lock = async (key, sec) => Boolean(await redis('SET', 'lock:' + key, '1', 
 
 module.exports = {
   normalizeUrl, siteLabel, createOrder, getOrder, saveOrder, orderState, closeOrder, listOpenOrders,
-  submitReview, getReview, updateReview, publish, unpublish, listReviews, listApproved, likeCounts, setLike, rateLimit, lock
+  submitReview, getReview, updateReview, publish, unpublish, listReviews, listApproved, rateLimit, lock
 };

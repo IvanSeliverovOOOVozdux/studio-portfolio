@@ -40,31 +40,14 @@ function memory(c){
       const s = Number(c[2]); let t = Number(c[3]); if (t < 0) t = arr.length + t;
       return arr.slice(s, t + 1);
     }
-    case 'SADD':      { let e = entry(k); if (!e){ e = { v: new Set(), exp: 0 }; M.set(k, e); } const had = e.v.has(String(c[2])); e.v.add(String(c[2])); return had ? 0 : 1; }
-    case 'SREM':      { const e = entry(k); return e && e.v.delete(String(c[2])) ? 1 : 0; }
-    case 'SISMEMBER': { const e = entry(k); return e && e.v.has(String(c[2])) ? 1 : 0; }
-    case 'SCARD':     { const e = entry(k); return e ? e.v.size : 0; }
     default: throw new Error('mock redis: команда не поддерживается: ' + op);
   }
 }
 
 const norm = cmd => cmd.map(x => (typeof x === 'number' ? String(x) : x));
 
-// Несколько команд одним запросом (Upstash /pipeline): быстро считать лайки у многих отзывов сразу.
-async function realPipeline(cmds){
-  const url = process.env.UPSTASH_REDIS_REST_URL, token = process.env.UPSTASH_REDIS_REST_TOKEN;
-  if (!url || !token) throw new Error('Redis не настроен: нет UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN');
-  let r;
-  try { r = await fetch(url.replace(/\/+$/, '') + '/pipeline', { method: 'POST', headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' }, body: JSON.stringify(cmds) }); }
-  catch (e){ throw new Error('Redis недоступен: ' + ((e.cause && (e.cause.code || e.cause.message)) || e.message)); }
-  const j = await r.json().catch(() => null);
-  if (!r.ok || !Array.isArray(j)) throw new Error('Redis pipeline: ' + (r.status));
-  return j.map(x => { if (x && x.error) throw new Error('Redis: ' + x.error); return x ? x.result : null; });
-}
-
 async function redis(...cmd){
   const c = norm(cmd);
   return process.env.AIRIUM_MOCK_REDIS === '1' ? memory(c) : real(c);
 }
-redis.pipeline = async cmds => (process.env.AIRIUM_MOCK_REDIS === '1' ? cmds.map(c => memory(norm(c))) : realPipeline(cmds.map(norm)));
 module.exports = redis;

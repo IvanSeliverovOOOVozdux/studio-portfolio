@@ -44,6 +44,10 @@ async function tg(method, body){
     { command: 'new', description: 'Создать ссылку на отзыв для клиента' },
     { command: 'orders', description: 'Ссылки, которые ждут отзыва' },
     { command: 'history', description: 'История отзывов' },
+    { command: 'replies', description: 'Готовые ответы студии под отзывами' },
+    { command: 'addreply', description: 'Добавить ответ: /addreply 5 текст с {name}' },
+    { command: 'delreply', description: 'Удалить ответ: /delreply 5 номер' },
+    { command: 'resetreplies', description: 'Вернуть стандартные ответы' },
     { command: 'cancel', description: 'Отменить ввод' },
     { command: 'help', description: 'Справка' }
   ] });
