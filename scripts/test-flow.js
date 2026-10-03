@@ -79,7 +79,7 @@ const ok = (name, cond, extra) => { if (!cond) fails++; console.log((cond ? 'OK 
   /* --- история --- */
   await t.say(1001, '/history');
   const h = t.lastSent().body.text;
-  ok('/history: проект, оценка, начало текста, кто одобрил', /Soberi Party/.test(h) && /★★★★★/.test(h) && /Сайт заработал/.test(h) && /одобрено · Иван/.test(h), h);
+  ok('/history: проект, оценка, начало текста, кто одобрил', /Soberi Party/.test(h) && /★★★★★/.test(h) && /Сайт заработал/.test(h) && /на сайте · Иван/.test(h), h);
 
   /* --- отклонение --- */
   await t.say(1002, '/new Кофейня Мякиш | myakish.ru | Денис');
@@ -253,6 +253,69 @@ const ok = (name, cond, extra) => { if (!cond) fails++; console.log((cond ? 'OK 
   await t.press(9999, 'm:home', 558);
   await t.press(1001, 'm:home', 558, { thread: 8 });
   ok('меню: чужой и нажатие из другой темы игнорируются', t.edits().length === editsBefore);
+
+  /* --- управление отзывами из истории: показать, скрыть, удалить; сайт и база меняются вместе --- */
+  const redisM = require('../api/_lib/redis'), S2 = require('../api/_lib/store');
+  const mkRev = async (cmd, rating, name, text, ip) => {
+    await t.say(1001, cmd); const tk = tokenOf(t.lastSent().body.text);
+    await t.post('/api/submit', { token: tk, rating, name, role: '', text, consent: true }, ip);
+    const id = reviewIdOf(t.lastSent()); const rec = await S2.getReview(id);
+    return { id, token: tk, mid: rec.messageId };
+  };
+  const onSite = async () => (await (await t.get('/api/reviews')).json()).reviews.map(x => x.id);
+  const histBtns = () => lastEdit().reply_markup.inline_keyboard.flat();
+  const mA = await mkRev('/new Управление А | upr-a.ru | Анна', 5, 'Анна Тестова', 'Первый отзыв для проверки управления: показать и скрыть.', '10.0.0.31');
+  const mB = await mkRev('/new Управление Б | upr-b.ru | Борис', 4, 'Борис Тестов', 'Второй отзыв, его мы сначала отклоним, потом покажем.', '10.0.0.32');
+  const mC = await mkRev('/new Управление В | upr-c.ru | Вера', 5, 'Вера Тестова', 'Третий отзыв, он будет ждать решения и затем удалён навсегда.', '10.0.0.33');
+  await sleep(2100); await t.press(1002, 'a:' + mA.id, mA.mid); await t.press(1002, 'r:' + mB.id, mB.mid);
+  await t.press(1001, 'h:0', 600);
+  ok('история: у каждого отзыва свои кнопки «Показать/Скрыть» и «Удалить» (hs/hd)', [mA, mB, mC].every(x => hasCb(histBtns(), 'hs:' + x.id + ':0') && hasCb(histBtns(), 'hd:' + x.id + ':0')), histBtns().map(b => b.callback_data));
+  const lab = id => (histBtns().find(b => b.callback_data === 'hs:' + id + ':0') || {}).text || '';
+  ok('подписи кнопок по статусу: на сайте → «Скрыть», отклонён → «Показать», ждёт → «Одобрить»', /Скрыть/.test(lab(mA.id)) && /Показать/.test(lab(mB.id)) && /Одобрить/.test(lab(mC.id)), [lab(mA.id), lab(mB.id), lab(mC.id)]);
+  ok('в истории отзывы пронумерованы (1., 2., 3.)', /(^|\n)1\. /.test(lastEdit().text) && /\n2\. /.test(lastEdit().text) && /\n3\. /.test(lastEdit().text));
+
+  // скрыть
+  ok('до скрытия отзыв А на сайте', (await onSite()).includes(mA.id));
+  await sleep(2100); await t.press(1001, 'hs:' + mA.id + ':0', 600);
+  ok('«Скрыть с сайта»: статус hidden в базе, из публичного списка пропал', (await S2.getReview(mA.id)).status === 'hidden' && !(await onSite()).includes(mA.id) && !(await S2.listApproved(50)).some(x => x.id === mA.id));
+  ok('после скрытия в истории у отзыва кнопка стала «Показать на сайте»', /Показать/.test(lab(mA.id)));
+  ok('исходная карточка в чате обновилась (Скрыт с сайта, без устаревших кнопок «Скрыть»)', t.edits().some(e => e.body.message_id === mA.mid && /Скрыт с сайта/.test(e.body.text)));
+  // показать обратно
+  await sleep(2100); await t.press(1001, 'hs:' + mA.id + ':0', 600);
+  ok('«Показать на сайте»: статус approved, отзыв снова в публичном списке', (await S2.getReview(mA.id)).status === 'approved' && (await onSite()).includes(mA.id));
+  ok('тост «Отзыв снова на сайте»', t.answers().slice(-1)[0].body.text === 'Отзыв снова на сайте', t.answers().slice(-1)[0].body.text);
+  // отклонённый отзыв можно показать
+  await sleep(2100); await t.press(1001, 'hs:' + mB.id + ':0', 600);
+  ok('отклонённый отзыв Б можно показать на сайте', (await S2.getReview(mB.id)).status === 'approved' && (await onSite()).includes(mB.id));
+  // ожидающий можно одобрить из истории
+  await t.press(1001, 'hs:' + mC.id + ':0', 600);
+  ok('ожидающий отзыв В одобряется из истории и появляется на сайте', (await S2.getReview(mC.id)).status === 'approved' && (await onSite()).includes(mC.id));
+
+  // удалить
+  await t.press(1001, 'hd:' + mC.id + ':0', 600);
+  ok('«Удалить»: сначала подтверждение с предупреждением', /Удалить отзыв навсегда/.test(lastEdit().text) && hasCb(histBtns(), 'hdy:' + mC.id + ':0') && hasCb(histBtns(), 'h:0'), lastEdit().text);
+  await t.press(1001, 'h:0', 600);
+  ok('«Отмена» в подтверждении: отзыв остался', !!(await S2.getReview(mC.id)) && (await onSite()).includes(mC.id));
+  await t.press(9999, 'hdy:' + mC.id + ':0', 600);
+  ok('чужой не может удалить отзыв', !!(await S2.getReview(mC.id)));
+  await t.press(1001, 'hdy:' + mC.id + ':0', 600, { thread: 8 });
+  ok('нажатие из другой темы не удаляет', !!(await S2.getReview(mC.id)));
+  await sleep(2100); await t.press(1001, 'hdy:' + mC.id + ':0', 600);
+  const gone = await S2.getReview(mC.id);
+  ok('«Да, удалить»: запись отзыва стёрта из базы', gone === null);
+  ok('удалённого отзыва нет ни в списке истории, ни в публичном списке сайта', !(await S2.listReviews(0, 200)).items.some(x => x.id === mC.id) && !(await onSite()).includes(mC.id) && !(await S2.listApproved(50)).some(x => x.id === mC.id));
+  ok('вместе с отзывом стёрта личная ссылка клиента (заказ и метка «использована»)', (await redisM('GET', 'order:' + mC.token)) === null && (await redisM('GET', 'used:' + mC.token)) === null && (await t.get('/api/order?t=' + mC.token)).status === 404);
+  ok('исходная карточка в чате заменена на «Отзыв удалён», текст клиента из чата убран', t.edits().some(e => e.body.message_id === mC.mid && /Отзыв удалён/.test(e.body.text) && !/Третий отзыв/.test(e.body.text)));
+  ok('в обновлённой истории удалённого отзыва нет', !histBtns().some(b => (b.callback_data || '').includes(mC.id)), histBtns().map(b => b.callback_data));
+  await t.press(1002, 'a:' + mC.id, mC.mid);
+  ok('устаревшая кнопка удалённой карточки не воскрешает отзыв', (await S2.getReview(mC.id)) === null && !(await onSite()).includes(mC.id));
+  // удалить скрытый
+  await sleep(2100); await t.press(1001, 'hs:' + mB.id + ':0', 600);
+  ok('отзыв Б скрыт', (await S2.getReview(mB.id)).status === 'hidden' && !(await onSite()).includes(mB.id));
+  await sleep(2100); await t.press(1001, 'hdy:' + mB.id + ':0', 600);
+  ok('скрытый отзыв Б тоже удаляется полностью', (await S2.getReview(mB.id)) === null && (await redisM('GET', 'order:' + mB.token)) === null);
+  await sleep(2100); await t.press(1001, 'hdy:' + mA.id + ':0', 600);
+  ok('удаление опубликованного отзыва А: пропал и с сайта', (await S2.getReview(mA.id)) === null && !(await onSite()).includes(mA.id));
 
   /* --- безопасность текста --- */
   await t.say(1001, '/new Тест XSS | xss-test.ru | Клиент');

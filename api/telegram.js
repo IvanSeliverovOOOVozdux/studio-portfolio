@@ -171,17 +171,41 @@ async function menuView(){
 }
 
 const PAGE = 6;
+// История: у каждого отзыва своя строка кнопок — «Показать на сайте» / «Скрыть с сайта» и «Удалить»
 async function historyView(page){
-  const { items, total } = await S.listReviews(page, PAGE);
+  let { items, total } = await S.listReviews(page, PAGE);
   if (!total) return { text: '<b>История отзывов</b>\n\nОтзывов пока нет.', kb: kb([[btn('➕ Новая ссылка', 'm:new')], BACK]) };
   const pages = Math.ceil(total / PAGE);
-  const row = [];
-  if (page > 0) row.push(btn('‹ Новее', 'h:' + (page - 1)));
-  if (page < pages - 1) row.push(btn('Старше ›', 'h:' + (page + 1)));
+  if (page >= pages){ page = pages - 1; ({ items, total } = await S.listReviews(page, PAGE)); }       // после удаления последней записи страницы возвращаемся на последнюю страницу
+  const rows = items.map((r, i) => [
+    btn(`${i + 1}. ` + (r.status === 'approved' ? '🙈 Скрыть с сайта' : r.status === 'pending' ? '✅ Одобрить' : '👁 Показать на сайте'), `hs:${r.id}:${page}`),
+    btn('🗑 Удалить', `hd:${r.id}:${page}`)
+  ]);
+  const nav = [];
+  if (page > 0) nav.push(btn('‹ Новее', 'h:' + (page - 1)));
+  if (page < pages - 1) nav.push(btn('Старше ›', 'h:' + (page + 1)));
+  if (nav.length) rows.push(nav);
+  rows.push(BACK);
   return {
-    text: `<b>История отзывов</b> · ${page + 1}/${pages} · всего ${total}\n\n` + items.map(F.historyLine).join('\n\n'),
-    kb: kb((row.length ? [row] : []).concat([BACK]))
+    text: `<b>История отзывов</b> · ${page + 1}/${pages} · всего ${total}\n\n` + items.map((r, i) => F.historyLine(r, i + 1)).join('\n\n'),
+    kb: kb(rows)
   };
+}
+async function deleteConfirmView(id, page){
+  const r = await S.getReview(id);
+  if (!r) return null;
+  return {
+    text: `<b>Удалить отзыв навсегда?</b>\n\n${F.historyLine(r)}\n\nОтзыв исчезнет с сайта и из базы, личная ссылка клиента перестанет работать. Это нельзя отменить.`,
+    kb: kb([[btn('🗑 Да, удалить навсегда', `hdy:${id}:${page}`)], [btn('Отмена', 'h:' + page)]])
+  };
+}
+// Обновляет исходную карточку отзыва в чате (чтобы на ней не висели устаревшие кнопки). Если сообщение уже недоступно — молча пропускаем.
+async function refreshCard(r, deleted){
+  if (!r || !r.chatId || !r.messageId) return;
+  try {
+    if (deleted) await tg.edit(r.chatId, r.messageId, `🗑 <b>Отзыв удалён</b> · ${F.esc(deleted.name)} · ${F.fmt(Date.now())}`, { reply_markup: kb([]) });
+    else await tg.edit(r.chatId, r.messageId, F.cardText(r), { reply_markup: F.cardKeyboard(r) });
+  } catch (e) { /* карточка могла быть удалена или слишком старая */ }
 }
 
 async function ordersView(){
@@ -281,6 +305,25 @@ async function onCallback(cb){
     return void await show(await menuView(), 'Заполнение отменено');
   }
   if (act === 'h') return void await show(await historyView(Math.max(0, Number(arg) || 0)));
+  if (act === 'hs'){                                           // «Показать на сайте» / «Скрыть с сайта» прямо из истории
+    const page = Math.max(0, Number(arg2) || 0), cur = await S.getReview(arg);
+    if (!cur) return void await show(await historyView(page), 'Отзыв не найден');
+    const res = await applyAction(arg, cur.status === 'approved' ? 'x' : 'a', by);
+    if (res.busy) return void await show(await historyView(page), 'Секунду…');
+    if (res.r) await refreshCard(res.r);
+    return void await show(await historyView(page), res.toast);
+  }
+  if (act === 'hd'){                                           // удаление: сначала подтверждение
+    const v = await deleteConfirmView(arg, Math.max(0, Number(arg2) || 0));
+    return void await show(v || await historyView(0), v ? undefined : 'Отзыв уже удалён');
+  }
+  if (act === 'hdy'){
+    const page = Math.max(0, Number(arg2) || 0);
+    if (!(await S.lock('decide:' + arg, 2))) return void await tg.answer(cb.id, 'Секунду…');
+    const gone = await S.deleteReview(arg);
+    if (gone) await refreshCard(gone, gone);
+    return void await show(await historyView(page), gone ? 'Отзыв удалён' : 'Отзыв уже удалён');
+  }
   if (act === 'k'){                                            // закрыть ссылку прямо из списка и обновить список
     const o = await S.closeOrder(arg);
     return void await show(await ordersView(), o ? 'Ссылка закрыта' : 'Ссылка уже использована или закрыта');
@@ -309,15 +352,17 @@ async function onCallback(cb){
   await tg.answer(cb.id);
 }
 
-async function decide(cb, act, id, by, chatId, mid){
-  if (!(await S.lock('decide:' + id, 2))) return void await tg.answer(cb.id, 'Секунду…');
+// Общая логика решений по отзыву (карточка и история): a — показать/одобрить, r — отклонить, x — скрыть.
+// Состояние в базе и список для сайта (z:approved) меняются вместе, поэтому сайт и база всегда согласованы.
+async function applyAction(id, act, by){
+  if (!(await S.lock('decide:' + id, 2))) return { busy: true };
   let r = await S.getReview(id);
-  if (!r) return void await tg.answer(cb.id, 'Отзыв не найден', true);
-
+  if (!r) return { missing: true };
   let toast = '';
-  if (act === 'a' && (r.status === 'pending' || r.status === 'hidden')){
+  if (act === 'a' && (r.status === 'pending' || r.status === 'hidden' || r.status === 'rejected')){
+    const was = r.status;
     r = await S.updateReview(id, { status: 'approved', decidedBy: by, decidedAt: Date.now() });
-    await S.publish(r); toast = 'Одобрено, отзыв опубликован';
+    await S.publish(r); toast = was === 'pending' ? 'Одобрено, отзыв опубликован' : 'Отзыв снова на сайте';
   } else if (act === 'r' && r.status === 'pending'){
     r = await S.updateReview(id, { status: 'rejected', decidedBy: by, decidedAt: Date.now() });
     await S.closeOrder(r.token); toast = 'Отклонено';
@@ -327,6 +372,13 @@ async function decide(cb, act, id, by, chatId, mid){
   } else {
     toast = 'Уже решено: ' + (r.decidedBy ? r.decidedBy.name : r.status);
   }
-  await tg.answer(cb.id, toast);
-  await tg.edit(chatId, mid, F.cardText(r), { reply_markup: F.cardKeyboard(r) });
+  return { r, toast };
+}
+
+async function decide(cb, act, id, by, chatId, mid){
+  const res = await applyAction(id, act, by);
+  if (res.busy) return void await tg.answer(cb.id, 'Секунду…');
+  if (res.missing) return void await tg.answer(cb.id, 'Отзыв не найден', true);
+  await tg.answer(cb.id, res.toast);
+  await tg.edit(chatId, mid, F.cardText(res.r), { reply_markup: F.cardKeyboard(res.r) });
 }

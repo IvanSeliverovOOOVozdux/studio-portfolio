@@ -28,12 +28,12 @@ function cardKeyboard(r){
   if (r.status === 'pending')  return { inline_keyboard: [[{ text: '✅ Одобрить', callback_data: 'a:' + r.id }, { text: '❌ Отклонить', callback_data: 'r:' + r.id }]].concat(site) };
   if (r.status === 'approved') return { inline_keyboard: [[{ text: '🙈 Скрыть с сайта', callback_data: 'x:' + r.id }]].concat(site) };
   if (r.status === 'hidden')   return { inline_keyboard: [[{ text: '↩️ Опубликовать снова', callback_data: 'a:' + r.id }]].concat(site) };
-  return { inline_keyboard: site };
+  return { inline_keyboard: [[{ text: '👁 Показать на сайте', callback_data: 'a:' + r.id }]].concat(site) };       // rejected: если отклонили по ошибке
 }
-function historyLine(r){
+function historyLine(r, n){
   const who = r.decidedBy ? ` · ${esc(r.decidedBy.name)} · ${fmt(r.decidedAt)}` : '';
-  const label = { pending: 'ждёт решения', approved: 'одобрено', rejected: 'отклонено', hidden: 'скрыто' }[r.status];
-  return `${ICON[r.status]} <b>${esc(r.product)}</b> · ${stars(r.rating)} · ${esc(r.name)}\n«${esc(snippet(r.text, 80))}»\n<i>${label}${who}</i>`;
+  const label = { pending: 'ждёт решения', approved: 'на сайте', rejected: 'отклонено', hidden: 'скрыто' }[r.status];
+  return `${n ? n + '. ' : ''}${ICON[r.status]} <b>${esc(r.product)}</b> · ${stars(r.rating)} · ${esc(r.name)}\n«${esc(snippet(r.text, 80))}»\n<i>${label}${who}</i>`;
 }
 
 module.exports = { esc, stars, fmt, snippet, ICON, cardText, cardKeyboard, historyLine };

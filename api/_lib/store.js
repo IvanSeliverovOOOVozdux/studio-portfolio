@@ -79,6 +79,20 @@ async function updateReview(id, patch){
 const publish = r => redis('ZADD', 'z:approved', r.decidedAt || Date.now(), r.id);
 const unpublish = id => redis('ZREM', 'z:approved', id);
 
+// Полное удаление отзыва: сначала убираем из публичного списка (чтобы сайт перестал его отдавать),
+// затем стираем саму запись, её место в индексах и личную ссылку клиента (заказ + метка «ссылка использована»).
+async function deleteReview(id){
+  const r = await getReview(id); if (!r) return null;
+  await redis('ZREM', 'z:approved', id);
+  await redis('ZREM', 'z:reviews', id);
+  await redis('DEL', 'review:' + id);
+  if (r.token){
+    await redis('ZREM', 'z:orders', r.token);
+    await redis('DEL', 'order:' + r.token, 'used:' + r.token);
+  }
+  return r;
+}
+
 async function listReviews(page, size){
   const total = Number(await redis('ZCARD', 'z:reviews'));
   const ids = await redis('ZREVRANGE', 'z:reviews', page * size, page * size + size - 1);
@@ -102,5 +116,5 @@ const lock = async (key, sec) => Boolean(await redis('SET', 'lock:' + key, '1', 
 
 module.exports = {
   normalizeUrl, siteLabel, createOrder, getOrder, saveOrder, orderState, closeOrder, listOpenOrders,
-  submitReview, getReview, updateReview, publish, unpublish, listReviews, listApproved, rateLimit, lock
+  submitReview, getReview, updateReview, publish, unpublish, deleteReview, listReviews, listApproved, rateLimit, lock
 };
