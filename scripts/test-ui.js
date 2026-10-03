@@ -60,24 +60,49 @@ const ok = (n, c, x) => { if (!c) fails++; console.log((c ? 'OK   ' : 'FAIL ') +
   ok('«Иван Селиверов» → «ИС»', pv.text === 'ИС' && pv.nameText === 'Иван Селиверов', pv);
   await setName('Себастьян'); pv = await prev();
   ok('«Себастьян» → «С» (одна буква)', pv.text === 'С', pv);
-  ok('пока выбраны буквы, сетка смайликов скрыта', await p.$eval('#emojis', e => getComputedStyle(e).display === 'none'));
+  const emoState = () => p.$eval('#emoWrap', e => e.dataset.state);
+  const emoH = () => p.$eval('.emo-wrap', e => e.getBoundingClientRect().height);
+  const segGap = () => p.evaluate(() => Math.round(document.getElementById('emoWrap').nextElementSibling.getBoundingClientRect().top - document.querySelector('.seg').getBoundingClientRect().bottom));
+  const colorsTop = () => p.$eval('.colors', e => e.getBoundingClientRect().top + scrollY);
+  ok('пока выбраны буквы, блок смайликов свёрнут (высота 0, скрыт, недоступен)', await emoState() === 'closed' && await segGap() === 16 && await p.$eval('#emoWrap', e => e.inert && getComputedStyle(e.querySelector('.emo-clip')).visibility === 'hidden'));
+  const topClosed = await colorsTop();
   await p.click('[data-mode="emoji"]'); await sleep(150);
-  ok('режим «Смайлик»: показана сетка из 24 смайликов', (await p.$$eval('#emojis button', a => a.length)) === 24 && await p.$eval('#emojis', e => getComputedStyle(e).display !== 'none'));
+  ok('режим «Смайлик»: в сетке 24 смайлика, блок раскрывается', (await p.$$eval('#emojis button', a => a.length)) === 24 && await emoState() === 'opening' && await emoH() > 0);
 
   // анимация появления смайликов: по очереди, с нарастающей задержкой; после неё работает :hover
   const anim = await p.evaluate(() => { const tiles = Array.from(document.querySelectorAll('#emojis button')), cs = tiles.map(b => getComputedStyle(b));
-    return { name: cs[0].animationName, d0: cs[0].animationDelay, d1: cs[1].animationDelay, d23: cs[23].animationDelay, running: tiles[0].getAnimations().length, op0: +cs[0].opacity, op23: +cs[23].opacity }; });
+    return { name: cs[0].animationName, d0: cs[0].animationDelay, d1: cs[1].animationDelay, d23: cs[23].animationDelay, running: tiles[0].getAnimations().length, op23: +cs[23].opacity }; });
   ok('смайлики появляются по очереди: анимация emojiIn, задержка растёт (0 → 16 мс → 368 мс)', anim.name === 'emojiIn' && anim.d0 === '0s' && anim.d1 === '0.016s' && anim.d23 === '0.368s', anim);
-  ok('в начале анимации первая плитка уже проявляется, последняя ещё невидима (по очереди, не разом)', anim.running > 0 && anim.op0 > 0 && anim.op23 === 0, anim);
+  ok('в начале анимации последняя плитка ещё невидима (по очереди, не разом)', anim.running > 0 && anim.op23 === 0, anim);
+  // пока смайлики появляются, переключатель заблокирован
+  await p.click('[data-mode="letters"]'); await sleep(60);
+  ok('пока смайлики появляются, нажатие «Буквы имени» игнорируется', await emoState() === 'opening' && (await prev()).emoji === true);
   await sleep(900);
-  const done = await p.evaluate(() => Array.from(document.querySelectorAll('#emojis button')).every(b => +getComputedStyle(b).opacity === 1 && b.getAnimations().length === 0));
-  ok('через секунду все 24 плитки на месте, анимации закончились', done);
+  ok('через секунду блок открыт, все 24 плитки на месте, анимации закончились', await emoState() === 'open' && await p.evaluate(() => Array.from(document.querySelectorAll('#emojis button')).every(b => +getComputedStyle(b).opacity === 1 && b.getAnimations().length === 0)));
+  const hOpen = await emoH(), topOpen = await colorsTop();
+  ok('при раскрытии блок вырос, а нижняя часть сайта уехала вниз (цвета сдвинулись на ' + Math.round(topOpen - topClosed) + ' px)', hOpen > 100 && topOpen - topClosed > 100, { hOpen, topClosed, topOpen });
   const tile3 = await p.$('#emojis button:nth-child(4)'); const tb = await tile3.boundingBox(); await p.mouse.move(tb.x + tb.width / 2, tb.y + tb.height / 2); await sleep(350);
   ok('после анимации работает наведение: плитка приподнимается на 2 px', await p.$eval('#emojis button:nth-child(4)', b => getComputedStyle(b).transform) === 'matrix(1, 0, 0, 1, 0, -2)');
   await p.mouse.move(5, 5);
-  await p.click('[data-mode="letters"]'); await p.click('[data-mode="emoji"]'); await sleep(120);
-  ok('при повторном переключении на «Смайлик» анимация запускается снова', await p.evaluate(() => document.querySelector('#emojis button').getAnimations().length > 0));
-  await sleep(700);
+
+  // сворачивание: плитки уходят с последней до первой, блок плавно схлопывается, пока идёт — «Смайлик» не нажать
+  await p.click('[data-mode="letters"]'); await sleep(120);
+  const out = await p.evaluate(() => { const tiles = Array.from(document.querySelectorAll('#emojis button')), cs = tiles.map(b => getComputedStyle(b));
+    return { state: document.getElementById('emoWrap').dataset.state, name: cs[0].animationName, d0: cs[0].animationDelay, d22: cs[22].animationDelay, d23: cs[23].animationDelay, busy: document.getElementById('avpick').classList.contains('busy') }; });
+  ok('сворачивание: плитки уходят в обратном порядке (последняя без задержки, первая — самая поздняя: 322 мс)', out.state === 'closing' && out.name === 'emojiOut' && out.d23 === '0s' && out.d22 === '0.014s' && out.d0 === '0.322s', out);
+  ok('пока смайлики пропадают, переключатель помечен занятым', out.busy);
+  await p.click('[data-mode="emoji"]'); await sleep(80);
+  ok('быстро нажать «Смайлик», пока смайлики не пропали, нельзя', await emoState() === 'closing' && (await prev()).emoji === false);
+  const hMid = await emoH(), midTop = await colorsTop();
+  ok('середина сворачивания: блок ещё не схлопнулся, но уже ниже полной высоты', hMid > 0 && hMid < hOpen, { hMid, hOpen });
+  await sleep(250); await p.click('[data-mode="emoji"]'); await sleep(40);
+  ok('и ближе к концу сворачивания «Смайлик» всё ещё не нажимается', await emoState() === 'closing');
+  await sleep(900);
+  ok('после сворачивания блок закрыт, нижняя часть вернулась вверх на место', await emoState() === 'closed' && await segGap() === 16 && Math.abs(await colorsTop() - topClosed) <= 1 && await p.$eval('#emoWrap', e => e.inert));
+  ok('после закрытия «Смайлик» снова доступен, ожидание снято', await p.$eval('#avpick', e => !e.classList.contains('busy')));
+  await p.click('[data-mode="emoji"]'); await sleep(120);
+  ok('при повторном переключении на «Смайлик» анимация запускается снова', await emoState() === 'opening' && await p.evaluate(() => document.querySelector('#emojis button').getAnimations().length > 0));
+  await sleep(800);
   // выравнивание: плашки не правее текста (сдвиг -2 px компенсирует скруглённые углы)
   const al = await p.evaluate(() => { const L = el => el.getBoundingClientRect().left, tl = el => { const r = document.createRange(); r.selectNodeContents(el); return r.getBoundingClientRect().left; };
     const base = tl(document.querySelector('#avpick > legend')); return { base, seg: L(document.querySelector('.seg')) - base, tile: L(document.querySelector('#emojis button')) - base, color: L(document.querySelector('.colors button')) - base, ctext: tl(document.querySelector('.sublbl')) - base }; });
@@ -87,9 +112,9 @@ const ok = (n, c, x) => { if (!c) fails++; console.log((c ? 'OK   ' : 'FAIL ') +
   await p.click('[data-color="#3f7a58"]'); await sleep(400); pv = await prev();
   ok('выбран цвет «Зелень»: фон аватарки и цвет имени совпадают (rgb(63, 122, 88))', pv.bg === 'rgb(63, 122, 88)' && pv.nameColor === 'rgb(63, 122, 88)', pv);
   ok('выбранные цвет и смайлик отмечены (aria-checked)', await p.$eval('[data-color="#3f7a58"]', e => e.getAttribute('aria-checked') === 'true') && await p.$eval('#emojis [data-emoji="🦊"]', e => e.getAttribute('aria-checked') === 'true'));
-  await p.click('[data-mode="letters"]'); pv = await prev();
+  await p.click('[data-mode="letters"]'); pv = await prev(); await sleep(900);
   ok('назад к буквам: снова «С», цвет сохранился', pv.text === 'С' && pv.bg === 'rgb(63, 122, 88)' && !pv.emoji, pv);
-  await p.click('[data-mode="emoji"]'); pv = await prev();
+  await p.click('[data-mode="emoji"]'); pv = await prev(); await sleep(800);
   ok('при возврате к смайликам прежний смайлик на месте (🦊)', pv.text === '🦊', pv);
   await p.screenshot({ path: path.join(OUT, 'review-form-avatar.png'), fullPage: true });
   await p.screenshot({ path: path.join(OUT, 'review-form-filled.png'), fullPage: true });
