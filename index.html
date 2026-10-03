@@ -730,7 +730,8 @@
     var STAR_OFF = STAR.replace('<svg ', '<svg class="off" ');
     var EXT = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M3 9l6-6M4 3h5v5"/></svg>';
     var AVA_STUDIO = '<span class="rev-ava" aria-hidden="true"><img src="assets/logo/airium-mark-light.png" alt="" /></span>';
-    var TYPE_CLIENT = 700, TYPE_STUDIO = 880, GAP = 520, HOLD = 2000, LEAVE = 450;     // мс
+    // мс: каждое сообщение появляется через 1,5 с после предыдущего (три точки сразу после отзыва, GAP = 0); пара держится 2 с; уход 0,45 с
+    var TYPE_CLIENT = 1500, TYPE_STUDIO = 1500, GAP = 0, HOLD = 2000, LEAVE = 450;
 
     function stars(n){ n = Math.max(0, Math.min(5, +n || 0)); return '<span class="rev-stars" role="img" aria-label="Оценка ' + n + ' из 5">' + STAR.repeat(n) + STAR_OFF.repeat(5 - n) + '</span>'; }
     function safeUrl(u){ try { var x = new URL(u); return (x.protocol === 'https:' || x.protocol === 'http:') ? x.href : ''; } catch(e){ return ''; } }

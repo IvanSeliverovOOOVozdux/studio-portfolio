@@ -61,7 +61,9 @@ const ok = (n, c, x) => { if (!c) fails++; console.log((c ? 'OK   ' : 'FAIL ') +
   const reply1 = e.find(x => x.ev === '+ студия сообщение');
   ok('ответ студии обращается по имени и подходит под критичный отзыв', reply1 && reply1.text.includes('Олег') && /честн|откровен|поделились|ценим/.test(reply1.text), reply1);
   const d = (a, b) => (e.find(x => x.ev === b) || {}).at - (e.find(x => x.ev === a) || {}).at;
-  ok('«печатает…» клиент ≈ 0,7 с (' + d('+ клиент печатает', '+ клиент сообщение') + ' мс), студия ≈ 0,88 с (' + d('+ студия печатает', '+ студия сообщение') + ' мс)', Math.abs(d('+ клиент печатает', '+ клиент сообщение') - 700) < 150 && Math.abs(d('+ студия печатает', '+ студия сообщение') - 880) < 150);
+  const dc = d('+ клиент печатает', '+ клиент сообщение'), ds = d('+ студия печатает', '+ студия сообщение'), dr = d('+ клиент сообщение', '+ студия сообщение');
+  ok('отзыв появляется через 1,5 с после «печатает…» (' + dc + ' мс)', Math.abs(dc - 1500) < 200, dc);
+  ok('ответ студии появляется ровно через 1,5 с после отзыва (' + dr + ' мс), «печатает…» студии тоже 1,5 с (' + ds + ' мс)', Math.abs(dr - 1500) < 200 && Math.abs(ds - 1500) < 200, [dr, ds]);
   const g = await p.evaluate(() => { const r = e => { const x = e.getBoundingClientRect(); return { l: x.left, r: x.right, cx: x.left + x.width / 2, cy: x.top + x.height / 2, b: x.bottom }; }; const m = document.querySelector('.rev-msg.in:not(:has(.rev-typing))'), o = document.querySelector('.rev-msg.out:not(:has(.rev-typing))'); return { inB: r(m.querySelector('.rev-bub')), inA: r(m.querySelector('.rev-ava')), outB: r(o.querySelector('.rev-bub')), outA: r(o.querySelector('.rev-ava')), logo: !!o.querySelector('.rev-ava img') }; });
   const near = (a, b) => Math.abs(a - b) < 22;
   ok('аватарка клиента на левом нижнем углу, студии (логотип) на правом нижнем', near(g.inA.cx, g.inB.l) && near(g.inA.cy, g.inB.b) && near(g.outA.cx, g.outB.r) && near(g.outA.cy, g.outB.b) && g.logo, g);
