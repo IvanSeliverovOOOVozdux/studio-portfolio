@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Отзыв — Airium</title>
+<meta name="robots" content="noindex, nofollow" />
+<meta name="referrer" content="no-referrer" />
+<meta name="theme-color" content="#ece2d0" />
+<link rel="icon" type="image/png" sizes="64x64" href="/assets/logo/favicon-64.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+<style>
+  :root{
+    --bone:#ece2d0; --bone-2:#e3d6bf; --ink:#1b1714; --ink-2:#5c534a; --garnet:#9e2b45; --garnet-2:#b23a52; --green:#3fa66b;
+    --line:rgba(27,23,20,.16); --err:#a3262f; --ease:cubic-bezier(.16,1,.3,1);
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html{ -webkit-text-size-adjust:100%; }
+  body{
+    font-family:"Hanken Grotesk", system-ui, sans-serif; color:var(--ink); -webkit-font-smoothing:antialiased;
+    background:radial-gradient(120% 80% at 90% 0%, var(--bone-2), transparent 60%), var(--bone);
+    min-height:100dvh; overflow-x:clip;
+    padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  ::selection{ background:var(--garnet); color:#fff; }
+  button{ font:inherit; color:inherit; cursor:pointer; background:none; border:0; }
+  :focus-visible{ outline:2px solid var(--garnet); outline-offset:3px; border-radius:8px; }
+  .grain{ position:fixed; inset:0; z-index:90; pointer-events:none; opacity:.05;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+
+  header{ display:flex; align-items:center; padding:20px clamp(20px,5vw,48px); padding-top:calc(20px + env(safe-area-inset-top,0px)); }
+  .brand{ display:inline-flex; align-items:center; gap:12px; color:var(--ink); text-decoration:none; }
+  .brand img{ height:40px; width:auto; display:block; }
+  .brand span{ font-weight:500; font-size:15px; letter-spacing:.36em; text-transform:uppercase; padding-left:.36em; }
+
+  main{ max-width:680px; margin:0 auto; padding:clamp(16px,4vh,48px) clamp(20px,5vw,32px) 80px; }
+  .kick{ font-family:"JetBrains Mono"; font-size:12px; letter-spacing:.22em; text-transform:uppercase; color:var(--garnet); margin-bottom:18px; }
+  h1{ font-family:"Bricolage Grotesque", system-ui, sans-serif; font-weight:800; font-size:clamp(32px,7vw,56px); line-height:1; letter-spacing:-.03em; text-wrap:balance; overflow-wrap:anywhere; }
+  .lead{ margin-top:18px; color:var(--ink-2); font-size:17px; line-height:1.6; max-width:52ch; }
+
+  /* ссылка на сайт клиента */
+  .site{ position:relative; display:inline-flex; align-items:center; gap:9px; max-width:100%; margin-top:20px; padding:5px 6px 5px 14px; border-radius:999px; text-decoration:none; color:var(--garnet);
+    border:1px solid color-mix(in srgb, var(--garnet) 42%, transparent); font-family:"JetBrains Mono"; font-size:13px; line-height:1; transition:background .25s, border-color .25s; }
+  .site::after{ content:""; position:absolute; inset:-9px -4px; }
+  .site span{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .site i{ flex:none; width:26px; height:26px; border-radius:50%; display:grid; place-items:center; background:color-mix(in srgb, var(--garnet) 14%, transparent); transition:background .25s, color .25s; }
+  .site i svg{ width:12px; height:12px; fill:none; stroke:currentColor; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round; }
+  .site:hover{ background:color-mix(in srgb, var(--garnet) 10%, transparent); border-color:var(--garnet); }
+  .site:hover i{ background:var(--garnet); color:#fff; }
+
+  /* форма */
+  form{ margin-top:clamp(28px,5vh,44px); display:flex; flex-direction:column; gap:26px; }
+  .fld{ border:0; display:flex; flex-direction:column; gap:10px; min-width:0; }
+  .fld > legend, .fld > label.lbl{ font-family:"JetBrains Mono"; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-2); padding:0; display:flex; justify-content:space-between; gap:12px; }
+  .opt{ text-transform:none; letter-spacing:0; opacity:.7; }
+  input[type=text], textarea{
+    font:400 16px "Hanken Grotesk", system-ui, sans-serif; color:var(--ink); background:#fff; border:1px solid var(--line); border-radius:14px; padding:14px 16px; min-height:52px; width:100%;
+    transition:border-color .2s, box-shadow .2s;
+  }
+  textarea{ min-height:170px; resize:vertical; line-height:1.55; }
+  input:focus, textarea:focus{ outline:none; border-color:var(--garnet); box-shadow:0 0 0 3px color-mix(in srgb, var(--garnet) 18%, transparent); }
+  .hint{ font-size:13.5px; color:var(--ink-2); }
+  .count{ font-family:"JetBrains Mono"; font-size:12px; color:var(--ink-2); text-align:right; }
+  .err{ font-size:14px; color:var(--err); min-height:0; }
+  .err:empty{ display:none; }
+  [aria-invalid="true"]{ border-color:var(--err) !important; }
+
+  /* звёзды */
+  .rate{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  .rate-stars{ display:flex; gap:2px; }
+  .rate label{ position:relative; display:grid; place-items:center; width:48px; height:48px; cursor:pointer; border-radius:12px; }
+  .rate input{ position:absolute; opacity:0; inset:0; margin:0; cursor:pointer; }
+  .rate svg{ width:34px; height:34px; fill:transparent; stroke:var(--ink); stroke-width:1.4; stroke-linejoin:round; transition:fill .2s, transform .35s var(--ease), stroke .2s; pointer-events:none; }
+  .rate label.on svg{ fill:var(--garnet); stroke:var(--garnet); }
+  .rate label:hover svg{ transform:scale(1.12); }
+  .rate input:focus-visible + svg{ outline:2px solid var(--garnet); outline-offset:4px; border-radius:6px; }
+  .rate-word{ font-family:"Bricolage Grotesque", sans-serif; font-weight:700; font-size:20px; margin-left:8px; min-width:7ch; }
+
+  /* согласие */
+  .consent{ display:flex; gap:14px; align-items:flex-start; cursor:pointer; font-size:14.5px; line-height:1.5; color:var(--ink-2); }
+  .consent input{ position:absolute; opacity:0; }
+  .consent .box{ flex:none; width:26px; height:26px; margin-top:-2px; border-radius:8px; border:1.5px solid var(--ink); background:#fff; display:grid; place-items:center; transition:background .2s, border-color .2s; }
+  .consent .box svg{ width:14px; height:14px; stroke:#fff; stroke-width:2.6; fill:none; stroke-linecap:round; stroke-linejoin:round; opacity:0; transform:scale(.6); transition:opacity .2s, transform .3s var(--ease); }
+  .consent input:checked + .box{ background:var(--garnet); border-color:var(--garnet); }
+  .consent input:checked + .box svg{ opacity:1; transform:none; }
+  .consent input:focus-visible + .box{ outline:2px solid var(--garnet); outline-offset:3px; }
+  .consent a{ color:var(--garnet); }
+  .hp{ position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden; }
+
+  .submit{
+    display:inline-flex; align-items:center; justify-content:center; gap:12px; min-height:56px; padding:0 34px; border-radius:999px; background:var(--garnet); color:#fff;
+    font-weight:600; font-size:16px; box-shadow:0 18px 34px -16px rgba(158,43,69,.7); align-self:flex-start; width:100%;
+    transition:transform .3s var(--ease), background .3s, box-shadow .3s, opacity .3s;
+  }
+  @media(min-width:560px){ .submit{ width:auto; } }
+  .submit:hover:not(:disabled){ transform:translateY(-2px); background:var(--garnet-2); }
+  .submit:active:not(:disabled){ transform:scale(.98); }
+  .submit:disabled{ opacity:.7; cursor:progress; }
+  .spin{ width:18px; height:18px; border-radius:50%; border:2px solid rgba(255,255,255,.4); border-top-color:#fff; animation:spin .8s linear infinite; display:none; }
+  .submit.busy .spin{ display:block; }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+  .formerr{ padding:14px 16px; border-radius:14px; background:color-mix(in srgb, var(--err) 9%, transparent); border:1px solid color-mix(in srgb, var(--err) 35%, transparent); color:var(--err); font-size:15px; line-height:1.5; }
+  .formerr:empty{ display:none; }
+
+  /* состояния */
+  .panel{ animation:in .7s var(--ease) both; }
+  @keyframes in{ from{ opacity:0; transform:translateY(18px); } to{ opacity:1; transform:none; } }
+  .big-ico{ width:84px; height:84px; border-radius:50%; display:grid; place-items:center; background:color-mix(in srgb, var(--green) 16%, transparent); color:var(--green); margin-bottom:26px; }
+  .big-ico.warn{ background:color-mix(in srgb, var(--garnet) 12%, transparent); color:var(--garnet); }
+  .big-ico svg{ width:38px; height:38px; fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
+  .big-ico svg path{ stroke-dasharray:60; stroke-dashoffset:60; animation:draw .8s .25s var(--ease) forwards; }
+  @keyframes draw{ to{ stroke-dashoffset:0; } }
+  .skel{ display:flex; flex-direction:column; gap:16px; }
+  .skel i{ display:block; height:20px; border-radius:10px; background:linear-gradient(90deg, rgba(27,23,20,.06), rgba(27,23,20,.13), rgba(27,23,20,.06)); background-size:200% 100%; animation:sh 1.4s linear infinite; }
+  .skel i:first-child{ height:56px; width:70%; } .skel i:nth-child(2){ width:40%; } .skel i:last-child{ height:170px; margin-top:20px; border-radius:14px; }
+  @keyframes sh{ to{ background-position:-200% 0; } }
+  .retry{ margin-top:22px; min-height:48px; padding:0 24px; border-radius:999px; border:1px solid var(--ink); font-weight:600; transition:background .25s, color .25s; }
+  .retry:hover{ background:var(--ink); color:var(--bone); }
+  footer{ max-width:680px; margin:0 auto; padding:0 clamp(20px,5vw,32px) 40px; font-family:"JetBrains Mono"; font-size:12px; color:var(--ink-2); line-height:1.6; }
+
+  @media(prefers-reduced-motion:reduce){ *,*::before,*::after{ animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; } }
+</style>
+</head>
+<body>
+  <div class="grain" aria-hidden="true"></div>
+  <header><a class="brand" href="/" aria-label="Airium"><img src="/assets/logo/airium-mark.png" alt="" width="40" height="40" /><span>Airium</span></a></header>
+
+  <main id="app" aria-live="polite">
+    <div class="skel" aria-label="Загрузка"><i></i><i></i><i></i></div>
+  </main>
+  <footer id="foot" hidden>Ссылка персональная и одноразовая: отправить отзыв по ней можно один раз.</footer>
+
+<script>
+(function(){
+  'use strict';
+  var app = document.getElementById('app'), foot = document.getElementById('foot');
+  var esc = function(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); };
+  var m = location.pathname.match(/\/r\/([A-Za-z0-9_-]{16,40})/), token = m ? m[1] : (new URLSearchParams(location.search).get('t') || '');
+  var STAR = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6l2.9 6.2 6.7.8-4.9 4.6 1.3 6.7L12 17.6 6 20.9l1.3-6.7L2.4 9.6l6.7-.8z"/></svg>';
+  var WORDS = ['', 'Плохо', 'Так себе', 'Нормально', 'Хорошо', 'Отлично'];
+  var ARROW = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M3 9l6-6M4 3h5v5"/></svg>';
+  var CHECK = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+  var CROSS = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7v6M12 17h.01"/></svg>';
+
+  function safeUrl(u){ try { var x = new URL(u); return (x.protocol === 'https:' || x.protocol === 'http:') ? x.href : ''; } catch(e){ return ''; } }
+  function put(html){ app.innerHTML = '<div class="panel">' + html + '</div>'; }
+  function message(kind, title, text, showRetry){
+    foot.hidden = true;
+    put('<div class="big-ico ' + (kind === 'ok' ? '' : 'warn') + '">' + (kind === 'ok' ? CHECK : CROSS) + '</div><h1>' + title + '</h1><p class="lead">' + text + '</p>' +
+      (showRetry ? '<button class="retry" type="button" id="retry">Попробовать ещё раз</button>' : ''));
+    var r = document.getElementById('retry'); if (r) r.addEventListener('click', load);
+    document.title = 'Отзыв — Airium';
+  }
+
+  function load(){
+    app.innerHTML = '<div class="skel" aria-label="Загрузка"><i></i><i></i><i></i></div>';
+    if (!token) return message('err', 'Ссылка не найдена', 'Проверьте, что вы скопировали ссылку целиком. Или попросите прислать её ещё раз.');
+    fetch('/api/order?t=' + encodeURIComponent(token), { cache: 'no-store' })
+      .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ return { s: r.status, j: j }; }); })
+      .then(function(x){
+        var st = x.j && x.j.state;
+        if (x.s === 200 && st === 'open') return form(x.j);
+        if (st === 'submitted') return message('ok', 'Отзыв уже отправлен', 'По этой ссылке отзыв уже получен. Спасибо, что нашли время!');
+        if (st === 'expired') return message('err', 'Срок ссылки истёк', 'Попросите нас прислать новую ссылку, и мы с радостью её сделаем.');
+        if (st === 'closed') return message('err', 'Ссылка закрыта', 'Эта ссылка больше не действует. Если нужна новая, напишите нам.');
+        if (x.s === 429) return message('err', 'Слишком много попыток', 'Подождите несколько минут и откройте ссылку снова.', true);
+        if (x.s === 404) return message('err', 'Ссылка не найдена', 'Проверьте, что вы скопировали ссылку целиком. Или попросите прислать её ещё раз.');
+        return message('err', 'Что-то пошло не так', 'Не удалось загрузить страницу. Проверьте интернет и попробуйте снова.', true);
+      })
+      .catch(function(){ message('err', 'Нет соединения', 'Не удалось загрузить страницу. Проверьте интернет и попробуйте снова.', true); });
+  }
+
+  function form(o){
+    document.title = 'Отзыв о проекте «' + o.product + '» — Airium';
+    foot.hidden = false;
+    var href = safeUrl(o.siteUrl);
+    put(
+      '<div class="kick">Отзыв о проекте</div><h1>' + esc(o.product) + '</h1>' +
+      (href ? '<a class="site" href="' + esc(href) + '" target="_blank" rel="noopener noreferrer" aria-label="Открыть сайт ' + esc(o.siteLabel) + ' в новой вкладке"><span>' + esc(o.siteLabel) + '</span><i>' + ARROW + '</i></a>' : '') +
+      '<p class="lead">Спасибо, что работали с нами. Ваш отзыв прочитают будущие клиенты, поэтому важна каждая деталь: что понравилось и как прошла работа.</p>' +
+      '<form id="f" novalidate>' +
+        '<fieldset class="fld"><legend>Ваша оценка</legend><div class="rate" role="radiogroup" aria-label="Оценка от 1 до 5"><div class="rate-stars">' +
+          [1,2,3,4,5].map(function(n){ return '<label title="' + WORDS[n] + '"><input type="radio" name="rating" value="' + n + '" aria-label="' + n + ' из 5, ' + WORDS[n] + '">' + STAR + '</label>'; }).join('') +
+        '</div><span class="rate-word" id="word" aria-live="polite"></span></div><div class="err" id="e-rating" role="alert"></div></fieldset>' +
+        '<div class="fld"><label class="lbl" for="text">Ваш отзыв <span class="count" id="cnt">0 / 1500</span></label>' +
+          '<textarea id="text" name="text" maxlength="1500" placeholder="Например: как прошла работа, что получилось лучше ожиданий, что бы вы посоветовали другим" aria-describedby="e-text"></textarea><div class="err" id="e-text" role="alert"></div></div>' +
+        '<div class="fld"><label class="lbl" for="name">Как вас подписать</label>' +
+          '<input type="text" id="name" name="name" maxlength="60" autocomplete="name" value="' + esc(o.clientName) + '" placeholder="Имя и фамилия" aria-describedby="e-name"><div class="err" id="e-name" role="alert"></div></div>' +
+        '<div class="fld"><label class="lbl" for="role">Чем занимаетесь <span class="opt">необязательно</span></label>' +
+          '<input type="text" id="role" name="role" maxlength="80" autocomplete="organization-title" placeholder="Например: владелица цветочной студии"></div>' +
+        '<div class="fld"><label class="consent"><input type="checkbox" id="consent" name="consent" aria-describedby="e-consent"><span class="box">' + CHECK + '</span>' +
+          '<span>Согласен(на) на публикацию этого отзыва с моим именем на сайте Airium и на обработку этих данных для публикации. Удалим по вашей просьбе в любой момент.</span></label><div class="err" id="e-consent" role="alert"></div></div>' +
+        '<div class="hp" aria-hidden="true"><label>Сайт<input type="text" name="website" id="website" tabindex="-1" autocomplete="off"></label></div>' +
+        '<div class="formerr" id="formerr" role="alert"></div>' +
+        '<button class="submit" type="submit" id="go"><span class="spin" aria-hidden="true"></span><span id="golabel">Отправить отзыв</span></button>' +
+      '</form>'
+    );
+
+    var f = document.getElementById('f'), stars = Array.prototype.slice.call(f.querySelectorAll('.rate label')), word = document.getElementById('word');
+    var cur = 0;
+    function paint(n){ stars.forEach(function(l, i){ l.classList.toggle('on', i < n); }); word.textContent = WORDS[n || cur] || ''; if (!n && !cur) word.textContent = ''; }
+    stars.forEach(function(l, i){
+      l.addEventListener('mouseenter', function(){ paint(i + 1); word.textContent = WORDS[i + 1]; });
+      l.addEventListener('mouseleave', function(){ paint(cur); word.textContent = WORDS[cur] || ''; });
+      l.querySelector('input').addEventListener('change', function(){ cur = i + 1; paint(cur); document.getElementById('e-rating').textContent = ''; });
+    });
+    var ta = document.getElementById('text'), cnt = document.getElementById('cnt');
+    ta.addEventListener('input', function(){ cnt.textContent = ta.value.length + ' / 1500'; if (ta.value.trim().length >= 15) fieldErr('text', ''); });
+
+    f.consent.addEventListener('change', function(){ if (f.consent.checked) fieldErr('consent', ''); });
+    f.name.addEventListener('input', function(){ if (f.name.value.trim().length >= 2) fieldErr('name', ''); });
+    function fieldErr(k, msg){ var e = document.getElementById('e-' + k), inp = document.getElementById(k); if (e) e.textContent = msg; if (inp) inp.setAttribute('aria-invalid', msg ? 'true' : 'false'); }
+    function check(){
+      var bad = {}, name = f.name.value.trim(), text = ta.value.trim();
+      if (!cur) bad.rating = 'Поставьте оценку от 1 до 5';
+      if (text.length < 15) bad.text = 'Напишите хотя бы пару предложений (от 15 символов)';
+      if (name.length < 2) bad.name = 'Укажите имя (минимум 2 символа)';
+      if (!f.consent.checked) bad.consent = 'Нужно согласие на публикацию';
+      return bad;
+    }
+    function showErrors(bad){
+      ['rating','text','name','consent'].forEach(function(k){ fieldErr(k, bad[k] || ''); });
+      var first = ['rating','text','name','consent'].filter(function(k){ return bad[k]; })[0];
+      if (first){ var t = first === 'rating' ? f.querySelector('.rate input') : document.getElementById(first); if (t && t.focus) t.focus({ preventScroll: false }); }
+    }
+
+    f.addEventListener('submit', function(e){
+      e.preventDefault();
+      document.getElementById('formerr').textContent = '';
+      var bad = check(); showErrors(bad); if (Object.keys(bad).length) return;
+      var go = document.getElementById('go'), lab = document.getElementById('golabel');
+      go.disabled = true; go.classList.add('busy'); lab.textContent = 'Отправляем…';
+      fetch('/api/submit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
+        token: token, rating: cur, text: ta.value, name: f.name.value, role: f.role.value, consent: f.consent.checked, website: document.getElementById('website').value
+      }) }).then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ return { s: r.status, j: j }; }); })
+      .then(function(x){
+        if (x.s === 200 && x.j.ok) return message('ok', 'Спасибо за отзыв!', 'Он отправлен нам на проверку. После неё отзыв появится на нашем портфолио.');
+        if (x.s === 409) return message('ok', 'Отзыв уже отправлен', 'По этой ссылке отзыв уже получен. Спасибо!');
+        if (x.s === 410) return message('err', 'Ссылка больше не действует', 'Попросите нас прислать новую ссылку.');
+        if (x.s === 400 && x.j.fields){ showErrors(x.j.fields); }
+        else document.getElementById('formerr').textContent = x.s === 429 ? 'Слишком много попыток. Подождите несколько минут и попробуйте снова.' : 'Не удалось отправить отзыв. Ваш текст сохранён на странице, попробуйте ещё раз.';
+        go.disabled = false; go.classList.remove('busy'); lab.textContent = 'Отправить отзыв';
+      })
+      .catch(function(){
+        document.getElementById('formerr').textContent = 'Нет соединения. Ваш текст сохранён на странице, попробуйте ещё раз.';
+        go.disabled = false; go.classList.remove('busy'); lab.textContent = 'Отправить отзыв';
+      });
+    });
+  }
+
+  load();
+})();
+</script>
+</body>
+</html>
