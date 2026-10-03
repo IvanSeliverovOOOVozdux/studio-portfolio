@@ -48,7 +48,23 @@ function memory(c){
   }
 }
 
-module.exports = async function redis(...cmd){
-  const c = cmd.map(x => (typeof x === 'number' ? String(x) : x));
+const norm = cmd => cmd.map(x => (typeof x === 'number' ? String(x) : x));
+
+// Несколько команд одним запросом (Upstash /pipeline): быстро считать лайки у многих отзывов сразу.
+async function realPipeline(cmds){
+  const url = process.env.UPSTASH_REDIS_REST_URL, token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token) throw new Error('Redis не настроен: нет UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN');
+  let r;
+  try { r = await fetch(url.replace(/\/+$/, '') + '/pipeline', { method: 'POST', headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' }, body: JSON.stringify(cmds) }); }
+  catch (e){ throw new Error('Redis недоступен: ' + ((e.cause && (e.cause.code || e.cause.message)) || e.message)); }
+  const j = await r.json().catch(() => null);
+  if (!r.ok || !Array.isArray(j)) throw new Error('Redis pipeline: ' + (r.status));
+  return j.map(x => { if (x && x.error) throw new Error('Redis: ' + x.error); return x ? x.result : null; });
+}
+
+async function redis(...cmd){
+  const c = norm(cmd);
   return process.env.AIRIUM_MOCK_REDIS === '1' ? memory(c) : real(c);
-};
+}
+redis.pipeline = async cmds => (process.env.AIRIUM_MOCK_REDIS === '1' ? cmds.map(c => memory(norm(c))) : realPipeline(cmds.map(norm)));
+module.exports = redis;

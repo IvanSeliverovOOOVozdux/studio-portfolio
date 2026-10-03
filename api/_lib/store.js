@@ -91,6 +91,16 @@ async function listApproved(limit){
   return (await redis('MGET', ...ids.map(i => 'review:' + i))).map(parse).filter(r => r && r.status === 'approved');
 }
 
+/* ---------- лайки: множество посетителей на отзыв (lk:<id>), счётчик = размер множества ---------- */
+async function likeCounts(ids){
+  if (!ids.length) return [];
+  return (await redis.pipeline(ids.map(i => ['SCARD', 'lk:' + i]))).map(Number);
+}
+async function setLike(id, visitor, on){
+  await redis(on ? 'SADD' : 'SREM', 'lk:' + id, visitor);
+  return Number(await redis('SCARD', 'lk:' + id));
+}
+
 /* ---------- прочее ---------- */
 async function rateLimit(key, limit, windowSec){
   const n = Number(await redis('INCR', key));
@@ -102,5 +112,5 @@ const lock = async (key, sec) => Boolean(await redis('SET', 'lock:' + key, '1', 
 
 module.exports = {
   normalizeUrl, siteLabel, createOrder, getOrder, saveOrder, orderState, closeOrder, listOpenOrders,
-  submitReview, getReview, updateReview, publish, unpublish, listReviews, listApproved, rateLimit, lock
+  submitReview, getReview, updateReview, publish, unpublish, listReviews, listApproved, likeCounts, setLike, rateLimit, lock
 };

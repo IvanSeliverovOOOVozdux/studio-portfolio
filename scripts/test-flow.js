@@ -99,6 +99,21 @@ const ok = (name, cond, extra) => { if (!cond) fails++; console.log((cond ? 'OK 
   await t.press(1001, 'a:' + id1, 101);
   ok('вернуть на сайт: снова в списке', (await (await t.get('/api/reviews')).json()).reviews.length === 1);
 
+  /* --- лайки --- */
+  const like = (visitor, on, id) => t.post('/api/like', { id: id || id1, visitor, on }, '10.0.0.7').then(r => r.json().then(j => ({ s: r.status, j })));
+  let L = await like('visitor-aaaaaaaa', true);
+  ok('лайк: первый посетитель → 1', L.s === 200 && L.j.count === 1 && L.j.liked === true, L);
+  L = await like('visitor-aaaaaaaa', true);
+  ok('лайк: повтор того же посетителя не накручивает (всё ещё 1)', L.j.count === 1, L);
+  L = await like('visitor-bbbbbbbb', true);
+  ok('лайк: второй посетитель → 2', L.j.count === 2, L);
+  L = await like('visitor-aaaaaaaa', false);
+  ok('лайк: снятие → 1', L.j.count === 1 && L.j.liked === false, L);
+  ok('лайк: в публичном списке счётчик = 1', (await (await t.get('/api/reviews')).json()).reviews[0].likes === 1);
+  ok('лайк: короткий ID посетителя → 400', (await like('x', true)).s === 400);
+  ok('лайк: неодобренный/чужой отзыв → 404', (await like('visitor-cccccccc', true, id2)).s === 404);
+  ok('лайк: битый id → 400', (await like('visitor-cccccccc', true, 'zzzz')).s === 400);
+
   /* --- ссылки: список и закрытие --- */
   await t.say(1003, '/new Сайт юриста | lawyer-sokolov.vercel.app | -');
   const token3 = tokenOf(t.lastSent().body.text);
