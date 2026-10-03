@@ -13,7 +13,9 @@ const clean = (s, max) => String(s == null ? '' : s)
 module.exports = wrap(async (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
   if (req.method !== 'POST') return res.status(405).json({ ok: false });
-  const b = (req.body && typeof req.body === 'object') ? req.body : {};
+  let body;
+  try { body = req.body; } catch (e) { return res.status(400).json({ ok: false, error: 'bad_json' }); }   // Vercel бросает ошибку на битом JSON
+  const b = (body && typeof body === 'object') ? body : {};
 
   if (b.website) return res.status(200).json({ ok: true });                          // ловушка для ботов: тихо «успех»
   if (!(await rateLimit('rl:sub:' + ipHash(req), 8, 600))) return res.status(429).json({ ok: false, error: 'limit' });
