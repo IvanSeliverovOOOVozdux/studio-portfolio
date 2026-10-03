@@ -153,10 +153,72 @@ const ok = (name, cond, extra) => { if (!cond) fails++; console.log((cond ? 'OK 
   await t.say(1003, '/new Сайт юриста | lawyer-sokolov.vercel.app | -');
   const token3 = tokenOf(t.lastSent().body.text);
   await t.say(1003, '/orders');
-  ok('/orders: открытая ссылка в списке', t.lastSent().body.text.includes(token3));
+  const ordKb = JSON.stringify(t.lastSent().body.reply_markup);
+  ok('/orders: у открытой ссылки есть кнопка-ссылка с токеном и кнопка закрытия', ordKb.includes('/r/' + token3) && ordKb.includes('"k:' + token3 + '"'), ordKb);
   await t.press(1003, 'c:' + token3, 103);
   r = await t.get('/api/order?t=' + token3);
   ok('закрытая ссылка → 410 closed', r.status === 410 && (await r.json()).state === 'closed');
+
+  /* --- меню и кнопки: переходы между экранами нажатием --- */
+  const flat = m => m.body.reply_markup.inline_keyboard.flat();
+  const lastEdit = () => t.edits().slice(-1)[0].body;
+  const hasCb = (btns, d) => btns.some(b => b.callback_data === d);
+  await t.say(1001, '/menu');
+  let mb = flat(t.lastSent());
+  ok('/menu: кнопки «Новая ссылка», «Открытые ссылки», «История», «Ответы студии», «Справка»', ['m:new', 'm:ord', 'h:0', 'm:rep', 'm:help'].every(d => hasCb(mb, d)), mb);
+  ok('/menu: кнопки-ссылки «Сайт» и «Отзывы на сайте»', mb.some(b => b.url === t.BASE) && mb.some(b => b.url === t.BASE + '/#reviews'), mb);
+  ok('/menu: в тексте счётчики (ждут решения, опубликовано, ссылок)', /Ждут решения/.test(t.lastSent().body.text) && /Опубликовано на сайте/.test(t.lastSent().body.text) && /Ссылок ждут отзыва/.test(t.lastSent().body.text));
+  ok('/start тоже открывает меню', (await t.say(1001, '/start'), hasCb(flat(t.lastSent()), 'm:new')));
+
+  await t.press(1001, 'm:ord', 555);
+  ok('кнопка «Открытые ссылки»: экран правит то же сообщение, есть «Новая ссылка» и «В меню»', lastEdit().message_id === 555 && /Открытые ссылки|Ссылки, которые ждут/.test(lastEdit().text) && hasCb(lastEdit().reply_markup.inline_keyboard.flat(), 'm:home'), lastEdit());
+  await t.press(1001, 'h:0', 555);
+  ok('кнопка «История»: список отзывов и «В меню»', /История отзывов/.test(lastEdit().text) && hasCb(lastEdit().reply_markup.inline_keyboard.flat(), 'm:home'));
+  await t.press(1001, 'm:help', 555);
+  ok('кнопка «Справка»: подсказка по командам и «В меню»', /\/menu/.test(lastEdit().text) && hasCb(lastEdit().reply_markup.inline_keyboard.flat(), 'm:home'));
+  await t.press(1001, 'm:home', 555);
+  ok('кнопка «В меню» возвращает главное меню', /Выберите действие/.test(lastEdit().text) && hasCb(lastEdit().reply_markup.inline_keyboard.flat(), 'm:rep'));
+
+  // создание ссылки кнопками
+  await t.press(1001, 'm:new', 555);
+  ok('кнопка «Новая ссылка»: бот спрашивает название (force_reply)', /Как называется проект/.test(t.lastSent().body.text) && t.lastSent().body.reply_markup.force_reply === true);
+  await t.say(1001, 'Проект из кнопки'); await t.say(1001, 'button-site.ru'); await t.say(1001, '-');
+  const linkMsg = t.lastSent(), linkKb = flat(linkMsg), tokenBtn = tokenOf(linkMsg.body.text);
+  ok('после мастера кнопки: «Открыть страницу отзыва» (ссылка), «Закрыть ссылку», «В меню»', linkKb.some(b => b.url && b.url.includes('/r/' + tokenBtn)) && hasCb(linkKb, 'c:' + tokenBtn) && hasCb(linkKb, 'm:home'), linkKb);
+  await t.press(1001, 'm:ord', 556);
+  ok('новая ссылка видна в «Открытых ссылках»', JSON.stringify(lastEdit().reply_markup).includes('k:' + tokenBtn));
+  await t.press(1001, 'k:' + tokenBtn, 556);
+  const afterClose = await t.get('/api/order?t=' + tokenBtn);
+  ok('замок в списке закрывает ссылку (410) и обновляет список', afterClose.status === 410 && !JSON.stringify(lastEdit().reply_markup).includes('k:' + tokenBtn));
+
+  // ответы студии кнопками
+  await t.press(1001, 'm:rep', 557);
+  ok('кнопка «Ответы студии»: список и кнопки добавить/удалить/вернуть', /4–5★/.test(lastEdit().text) && ['ra:5', 'ra:3', 'rd:5', 'rd:3', 'rr:ask'].every(d => hasCb(lastEdit().reply_markup.inline_keyboard.flat(), d)));
+  await t.press(1001, 'ra:5', 557);
+  ok('«Для 4–5★»: бот просит прислать текст (force_reply)', /Пришлите текст ответа/.test(t.lastSent().body.text) && t.lastSent().body.reply_markup.force_reply === true);
+  await t.say(1001, 'Спасибо за отзыв, {name}! Работать с вами было приятно.');
+  ok('присланный текст сохраняется как ответ, есть кнопка «К ответам»', /Добавил \(4–5★/.test(t.lastSent().body.text) && hasCb(flat(t.lastSent()), 'm:rep'), t.lastSent().body.text);
+  let tplB = await R.getTemplates();
+  ok('ответ появился в базе', tplB.positive.length === R.DEFAULTS.positive.length + 1);
+  await t.press(1001, 'rd:5', 557);
+  const nums = lastEdit().reply_markup.inline_keyboard.flat().filter(b => /^rx:5:/.test(b.callback_data));
+  ok('«Удалить из 4–5★»: кнопки с номерами (' + nums.length + ' шт.)', /Удалить ответ/.test(lastEdit().text) && nums.length === tplB.positive.length, nums.length);
+  await t.press(1001, 'rx:5:' + tplB.positive.length, 557);
+  tplB = await R.getTemplates();
+  ok('кнопка с номером удаляет ответ', tplB.positive.length === R.DEFAULTS.positive.length);
+  await t.press(1001, 'rr:ask', 557);
+  ok('«Вернуть стандартные»: сначала подтверждение (Да/Отмена)', /Вернуть стандартные/.test(lastEdit().text) && hasCb(lastEdit().reply_markup.inline_keyboard.flat(), 'rr:yes'));
+  await t.press(1001, 'rr:yes', 557);
+  ok('после «Да» ответы сброшены, экран ответов обновлён', /4–5★/.test(lastEdit().text));
+
+  // карточка отзыва: кнопка-ссылка на сайт клиента
+  const cardKb = card1.body.reply_markup.inline_keyboard;
+  ok('карточка отзыва: у кнопок решения есть ссылка «Сайт клиента»', cardKb[0].length === 2 && cardKb.flat().some(b => b.url && b.url.includes('soberi-party-dmitrov.vercel.app')), cardKb);
+  // чужие и вне темы кнопки меню не работают
+  const editsBefore = t.edits().length;
+  await t.press(9999, 'm:home', 558);
+  await t.press(1001, 'm:home', 558, { thread: 8 });
+  ok('меню: чужой и нажатие из другой темы игнорируются', t.edits().length === editsBefore);
 
   /* --- безопасность текста --- */
   await t.say(1001, '/new Тест XSS | xss-test.ru | Клиент');

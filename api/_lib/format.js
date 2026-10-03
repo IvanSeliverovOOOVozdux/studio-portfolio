@@ -24,10 +24,11 @@ function cardText(r){
   return lines.join('\n');
 }
 function cardKeyboard(r){
-  if (r.status === 'pending')  return { inline_keyboard: [[{ text: '✅ Одобрить', callback_data: 'a:' + r.id }, { text: '❌ Отклонить', callback_data: 'r:' + r.id }]] };
-  if (r.status === 'approved') return { inline_keyboard: [[{ text: '🙈 Скрыть с сайта', callback_data: 'x:' + r.id }]] };
-  if (r.status === 'hidden')   return { inline_keyboard: [[{ text: '↩️ Опубликовать снова', callback_data: 'a:' + r.id }]] };
-  return { inline_keyboard: [] };
+  const site = r.siteUrl ? [[{ text: '🌐 Сайт клиента', url: r.siteUrl }]] : [];     // кнопка-ссылка на сайт, о котором отзыв
+  if (r.status === 'pending')  return { inline_keyboard: [[{ text: '✅ Одобрить', callback_data: 'a:' + r.id }, { text: '❌ Отклонить', callback_data: 'r:' + r.id }]].concat(site) };
+  if (r.status === 'approved') return { inline_keyboard: [[{ text: '🙈 Скрыть с сайта', callback_data: 'x:' + r.id }]].concat(site) };
+  if (r.status === 'hidden')   return { inline_keyboard: [[{ text: '↩️ Опубликовать снова', callback_data: 'a:' + r.id }]].concat(site) };
+  return { inline_keyboard: site };
 }
 function historyLine(r){
   const who = r.decidedBy ? ` · ${esc(r.decidedBy.name)} · ${fmt(r.decidedAt)}` : '';

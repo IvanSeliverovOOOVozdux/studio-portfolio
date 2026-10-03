@@ -41,6 +41,7 @@ async function tg(method, body){
   const w = await tg('setWebhook', { url: site + '/api/telegram', secret_token: secret, allowed_updates: ['message', 'callback_query'], drop_pending_updates: true });
   console.log(w.ok ? 'Вебхук привязан: ' + site + '/api/telegram' : 'Ошибка: ' + w.description);
   const c = await tg('setMyCommands', { commands: [
+    { command: 'menu', description: 'Главное меню с кнопками' },
     { command: 'new', description: 'Создать ссылку на отзыв для клиента' },
     { command: 'orders', description: 'Ссылки, которые ждут отзыва' },
     { command: 'history', description: 'История отзывов' },
