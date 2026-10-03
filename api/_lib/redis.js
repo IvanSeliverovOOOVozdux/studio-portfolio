@@ -5,7 +5,9 @@
 async function real(cmd){
   const url = process.env.UPSTASH_REDIS_REST_URL, token = process.env.UPSTASH_REDIS_REST_TOKEN;
   if (!url || !token) throw new Error('Redis не настроен: нет UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN');
-  const r = await fetch(url, { method: 'POST', headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' }, body: JSON.stringify(cmd) });
+  let r;
+  try { r = await fetch(url, { method: 'POST', headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' }, body: JSON.stringify(cmd) }); }
+  catch (e){ throw new Error('Redis недоступен: ' + ((e.cause && (e.cause.code || e.cause.message)) || e.message)); }
   const j = await r.json().catch(() => ({}));
   if (!r.ok || j.error) throw new Error('Redis: ' + (j.error || r.status));
   return j.result;
