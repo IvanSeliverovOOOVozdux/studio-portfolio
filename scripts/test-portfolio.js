@@ -36,7 +36,6 @@ const ok = (n, c, x) => { if (!c) fails++; console.log((c ? 'OK   ' : 'FAIL ') +
   ok('API отдаёт 3 отзыва, у каждого готовый ответ с именем, без шаблонных скобок и без лайков', api.length === 3 && api.every(r => r.reply && !/\{/.test(r.reply) && r.reply.includes(r.name.split(' ')[0]) && !('likes' in r)), api.map(r => r.reply));
 
   await open();
-  await p.$eval('#reviews', e => e.scrollIntoView({ block: 'center' }));
   const ev = async () => p.evaluate(() => window.__e);
   await p.evaluate(() => {
     window.__e = []; const t0 = performance.now(); const body = document.querySelector('#revBody');
@@ -46,6 +45,8 @@ const ok = (n, c, x) => { if (!c) fails++; console.log((c ? 'OK   ' : 'FAIL ') +
       if (m.type === 'childList' && m.removedNodes.length && !body.querySelector('.rev-msg')) window.__e.push({ at: Math.round(performance.now() - t0), ev: 'экран пуст' });
     })).observe(body, { childList: true, attributes: true, subtree: true, attributeFilter: ['class'] });
   });
+  // сначала подключаем наблюдателя, и только потом прокручиваем к блоку (прокрутка запускает анимацию)
+  await p.$eval('#reviews', e => e.scrollIntoView({ block: 'center' }));
   await sleep(300);
   const wait = async (f, ms) => { for (let i = 0; i < (ms || 9000) / 50; i++) { if (await f()) return true; await sleep(50); } return false; };
   const counter = () => p.$eval('#revCount', e => e.textContent);
