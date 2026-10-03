@@ -90,20 +90,24 @@
   .avname{ min-width:0; font-family:"Bricolage Grotesque", system-ui, sans-serif; font-weight:600; font-size:19px; color:var(--avc); transition:color .25s; line-height:1.2; }
   .avname span{ display:block; overflow-wrap:anywhere; }
   .avname small{ display:block; margin-top:4px; font:400 13px "Hanken Grotesk", system-ui, sans-serif; color:var(--ink-2); }
-  .seg{ display:flex; gap:4px; padding:4px; border-radius:14px; background:rgba(27,23,20,.06); align-self:flex-start; max-width:100%; }
+  /* margin-left:-2px: у плашек скруглённые углы, и при ровных по краю коробках они зрительно кажутся правее текста; сдвиг на 2 px выравнивает на глаз */
+  .seg{ display:flex; gap:4px; padding:4px; border-radius:14px; background:rgba(27,23,20,.06); align-self:flex-start; max-width:100%; margin-left:-2px; }
   .seg button{ min-height:44px; padding:0 18px; border-radius:10px; font-weight:500; font-size:15px; transition:background .25s, color .25s; }
   .seg button[aria-checked="true"]{ background:var(--ink); color:var(--bone); }
-  .emojis{ display:grid; grid-template-columns:repeat(auto-fill, minmax(46px, 1fr)); gap:6px; }
+  .emojis{ display:grid; grid-template-columns:repeat(auto-fill, minmax(46px, 1fr)); gap:6px; margin-left:-2px; margin-right:-2px; }
   .emojis[hidden]{ display:none; }
-  .emojis button{ min-height:46px; border-radius:12px; font-size:24px; line-height:1; background:#fff; border:1px solid var(--line); transition:transform .2s var(--ease), border-color .2s, box-shadow .2s, background .2s; }
+  /* плитки появляются по очереди (--i = номер плитки) с мягким всплытием; backwards, чтобы после анимации снова работал :hover */
+  .emojis button{ min-height:46px; border-radius:12px; font-size:24px; line-height:1; background:#fff; border:1px solid var(--line); transition:transform .2s var(--ease), border-color .2s, box-shadow .2s, background .2s;
+    animation:emojiIn .34s cubic-bezier(.2,.9,.3,1.15) backwards; animation-delay:calc(var(--i, 0) * 16ms); }
+  @keyframes emojiIn{ from{ opacity:0; transform:translateY(10px) scale(.6); } to{ opacity:1; transform:none; } }
   .emojis button:hover{ transform:translateY(-2px); }
   .emojis button[aria-checked="true"]{ border-color:var(--avc); background:color-mix(in srgb, var(--avc) 9%, #fff); box-shadow:0 0 0 3px color-mix(in srgb, var(--avc) 24%, transparent); }
   .sublbl{ font-family:"JetBrains Mono"; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-2); margin-bottom:10px; }
-  .colors{ display:flex; flex-wrap:wrap; gap:12px; }
+  .colors{ display:flex; flex-wrap:wrap; gap:12px; margin-left:-2px; }
   .colors button{ position:relative; width:36px; height:36px; border-radius:50%; background:var(--c); box-shadow:0 0 0 1px var(--line); transition:transform .2s var(--ease), box-shadow .2s; }
   .colors button::after{ content:""; position:absolute; inset:-5px; }
   .colors button:hover{ transform:scale(1.08); }
-  .colors button[aria-checked="true"]{ box-shadow:0 0 0 2px var(--bone), 0 0 0 4px var(--c); transform:scale(1.08); }
+  .colors button[aria-checked="true"]{ box-shadow:0 0 0 2px var(--bone), 0 0 0 4px var(--c); }      /* без увеличения: выбранный цвет не выпирает за левый край */
 
   /* согласие */
   .consent{ display:flex; gap:14px; align-items:flex-start; cursor:pointer; font-size:14.5px; line-height:1.5; color:var(--ink-2); }
@@ -225,7 +229,7 @@
           '<div class="seg" role="radiogroup" aria-label="Что показывать в аватарке">' +
             '<button type="button" role="radio" data-mode="letters" aria-checked="true">Буквы имени</button>' +
             '<button type="button" role="radio" data-mode="emoji" aria-checked="false">Смайлик</button></div>' +
-          '<div class="emojis" id="emojis" role="radiogroup" aria-label="Смайлик" hidden>' + AV.emojis.map(function(e){ return '<button type="button" role="radio" aria-checked="false" data-emoji="' + esc(e) + '" aria-label="Смайлик ' + esc(e) + '">' + esc(e) + '</button>'; }).join('') + '</div>' +
+          '<div class="emojis" id="emojis" role="radiogroup" aria-label="Смайлик" hidden>' + AV.emojis.map(function(e, i){ return '<button type="button" role="radio" aria-checked="false" style="--i:' + i + '" data-emoji="' + esc(e) + '" aria-label="Смайлик ' + esc(e) + '">' + esc(e) + '</button>'; }).join('') + '</div>' +
           '<div><div class="sublbl">Цвет</div><div class="colors" role="radiogroup" aria-label="Цвет аватарки">' +
             AV.colors.map(function(c){ return '<button type="button" role="radio" aria-checked="false" data-color="' + esc(c.c) + '" style="--c:' + esc(c.c) + '" aria-label="' + esc(c.n) + '" title="' + esc(c.n) + '"></button>'; }).join('') + '</div></div>' +
         '</fieldset>' +

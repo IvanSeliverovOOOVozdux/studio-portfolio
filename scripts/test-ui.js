@@ -63,6 +63,25 @@ const ok = (n, c, x) => { if (!c) fails++; console.log((c ? 'OK   ' : 'FAIL ') +
   ok('пока выбраны буквы, сетка смайликов скрыта', await p.$eval('#emojis', e => getComputedStyle(e).display === 'none'));
   await p.click('[data-mode="emoji"]'); await sleep(150);
   ok('режим «Смайлик»: показана сетка из 24 смайликов', (await p.$$eval('#emojis button', a => a.length)) === 24 && await p.$eval('#emojis', e => getComputedStyle(e).display !== 'none'));
+
+  // анимация появления смайликов: по очереди, с нарастающей задержкой; после неё работает :hover
+  const anim = await p.evaluate(() => { const tiles = Array.from(document.querySelectorAll('#emojis button')), cs = tiles.map(b => getComputedStyle(b));
+    return { name: cs[0].animationName, d0: cs[0].animationDelay, d1: cs[1].animationDelay, d23: cs[23].animationDelay, running: tiles[0].getAnimations().length, op0: +cs[0].opacity, op23: +cs[23].opacity }; });
+  ok('смайлики появляются по очереди: анимация emojiIn, задержка растёт (0 → 16 мс → 368 мс)', anim.name === 'emojiIn' && anim.d0 === '0s' && anim.d1 === '0.016s' && anim.d23 === '0.368s', anim);
+  ok('в начале анимации первая плитка уже проявляется, последняя ещё невидима (по очереди, не разом)', anim.running > 0 && anim.op0 > 0 && anim.op23 === 0, anim);
+  await sleep(900);
+  const done = await p.evaluate(() => Array.from(document.querySelectorAll('#emojis button')).every(b => +getComputedStyle(b).opacity === 1 && b.getAnimations().length === 0));
+  ok('через секунду все 24 плитки на месте, анимации закончились', done);
+  const tile3 = await p.$('#emojis button:nth-child(4)'); const tb = await tile3.boundingBox(); await p.mouse.move(tb.x + tb.width / 2, tb.y + tb.height / 2); await sleep(350);
+  ok('после анимации работает наведение: плитка приподнимается на 2 px', await p.$eval('#emojis button:nth-child(4)', b => getComputedStyle(b).transform) === 'matrix(1, 0, 0, 1, 0, -2)');
+  await p.mouse.move(5, 5);
+  await p.click('[data-mode="letters"]'); await p.click('[data-mode="emoji"]'); await sleep(120);
+  ok('при повторном переключении на «Смайлик» анимация запускается снова', await p.evaluate(() => document.querySelector('#emojis button').getAnimations().length > 0));
+  await sleep(700);
+  // выравнивание: плашки не правее текста (сдвиг -2 px компенсирует скруглённые углы)
+  const al = await p.evaluate(() => { const L = el => el.getBoundingClientRect().left, tl = el => { const r = document.createRange(); r.selectNodeContents(el); return r.getBoundingClientRect().left; };
+    const base = tl(document.querySelector('#avpick > legend')); return { base, seg: L(document.querySelector('.seg')) - base, tile: L(document.querySelector('#emojis button')) - base, color: L(document.querySelector('.colors button')) - base, ctext: tl(document.querySelector('.sublbl')) - base }; });
+  ok('переключатель, плитки смайликов и цвета сдвинуты влево на 2 px (не правее текста): ' + [al.seg, al.tile, al.color].map(x => x.toFixed(1)).join(' / '), [al.seg, al.tile, al.color].every(x => x <= 0.2 && x >= -2.8), al);
   await p.click('#emojis [data-emoji="🦊"]'); pv = await prev();
   ok('выбран смайлик 🦊: он стоит в аватарке', pv.text === '🦊' && pv.emoji, pv);
   await p.click('[data-color="#3f7a58"]'); await sleep(400); pv = await prev();
@@ -98,7 +117,7 @@ const ok = (n, c, x) => { if (!c) fails++; console.log((c ? 'OK   ' : 'FAIL ') +
   ok('телефон: все поля и кнопка >= 44px', small === 0);
   const fs = await p.$$eval('input[type=text], textarea', a => Math.min.apply(null, a.map(e => parseFloat(getComputedStyle(e).fontSize))));
   ok('телефон: шрифт полей >= 16px (iOS не зумит)', fs >= 16, fs);
-  await p.click('[data-mode="emoji"]'); await sleep(200);
+  await p.click('[data-mode="emoji"]'); await sleep(900);      // ждём конца анимации появления: в её начале плитки уменьшены
   ok('телефон: сетка смайликов не вылезает за экран, кнопки смайликов >= 44 px', (await p.evaluate(() => document.documentElement.scrollWidth - innerWidth)) === 0 && await p.$$eval('#emojis button', a => a.every(b => b.getBoundingClientRect().width >= 44 && b.getBoundingClientRect().height >= 44)));
   ok('телефон: переключатель «Буквы имени / Смайлик» и цвета не меньше 36 px', await p.$$eval('.seg button', a => a.every(b => b.getBoundingClientRect().height >= 44)) && await p.$$eval('.colors button', a => a.every(b => b.getBoundingClientRect().width >= 36)));
   await p.screenshot({ path: path.join(OUT, 'review-form-mobile.png'), fullPage: true });
