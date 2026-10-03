@@ -31,7 +31,10 @@ const HELP = [
 
 const personName = u => [u.first_name, u.last_name].filter(Boolean).join(' ') || (u.username ? '@' + u.username : String(u.id));
 const isAllowed = id => cfg().allowed.includes(String(id));
-const ask = placeholder => ({ reply_markup: { force_reply: true, selective: true, input_field_placeholder: placeholder } });
+// Под каждым вопросом мастера кнопка «Отмена»: прерывает заполнение и возвращает главное меню.
+// (force_reply не используем: к такому сообщению нельзя добавить кнопки; бот — администратор группы и видит ответы,
+//  а на сообщение бота можно и просто ответить — такие ответы приходят в любом случае)
+const ask = () => ({ reply_markup: { inline_keyboard: [[{ text: '✖ Отмена', callback_data: 'w:cancel' }]] } });
 const stKey = (chatId, userId) => `st:${chatId}:${userId}`;
 // ctx = { chatId, th } — th добавляет message_thread_id, если команда пришла из темы группы
 const say = (ctx, text, extra) => tg.send(ctx.chatId, text, Object.assign({}, ctx.th, extra));
@@ -101,23 +104,23 @@ async function startNew(ctx, from, args, key){
   }
   if (args){
     await redis('SET', key, JSON.stringify({ step: 'site', product: args.slice(0, 80) }), 'EX', 1800);
-    return void await say(ctx, `Проект: <b>${F.esc(args.slice(0, 80))}</b>\nТеперь пришлите <b>ссылку на сайт</b> клиента.`, ask('https://сайт.ру'));
+    return void await say(ctx, `Проект: <b>${F.esc(args.slice(0, 80))}</b>\n<b>Шаг 2 из 3.</b> Пришлите <b>ссылку на сайт</b> клиента.`, ask());
   }
   await redis('SET', key, JSON.stringify({ step: 'product' }), 'EX', 1800);
-  await say(ctx, 'Как называется проект? Например: <i>Сайт кофейни «Мякиш»</i>', ask('Название проекта'));
+  await say(ctx, '<b>Шаг 1 из 3.</b> Как называется проект? Например: <i>Сайт кофейни «Мякиш»</i>', ask());
 }
 
 async function wizardStep(ctx, from, key, st, text){
   if (st.step === 'product'){
-    if (text.length < 2 || text.length > 80) return void await say(ctx, 'Название от 2 до 80 символов. Попробуйте ещё раз.', ask('Название проекта'));
+    if (text.length < 2 || text.length > 80) return void await say(ctx, 'Название от 2 до 80 символов. Попробуйте ещё раз.', ask());
     await redis('SET', key, JSON.stringify({ step: 'site', product: text }), 'EX', 1800);
-    return void await say(ctx, 'Пришлите <b>ссылку на сайт</b> клиента.', ask('https://сайт.ру'));
+    return void await say(ctx, '<b>Шаг 2 из 3.</b> Пришлите <b>ссылку на сайт</b> клиента.', ask());
   }
   if (st.step === 'site'){
     const url = S.normalizeUrl(text);
-    if (!url) return void await say(ctx, 'Не похоже на адрес сайта. Пример: <code>soberi-party-dmitrov.vercel.app</code>', ask('https://сайт.ру'));
+    if (!url) return void await say(ctx, 'Не похоже на адрес сайта. Пример: <code>soberi-party-dmitrov.vercel.app</code>', ask());
     await redis('SET', key, JSON.stringify({ step: 'client', product: st.product, url }), 'EX', 1800);
-    return void await say(ctx, 'Как зовут клиента? Подставлю в форму. Если не нужно, пришлите «-».', ask('Имя клиента или -'));
+    return void await say(ctx, '<b>Шаг 3 из 3.</b> Как зовут клиента? Подставлю в форму. Если не нужно, пришлите «-».', ask());
   }
   if (st.step === 'client') return void await finishOrder(ctx, from, key, st.product, st.url, text);
   if (st.step === 'addreply'){ await redis('DEL', key); return void await saveReply(ctx, st.group, text); }
@@ -273,6 +276,10 @@ async function onCallback(cb){
     if (arg === 'rep')  return void await show(await repliesView());
     if (arg === 'new'){ await tg.answer(cb.id); return void await startNew(ctx, from, '', key); }
   }
+  if (act === 'w' && arg === 'cancel'){                        // «Отмена» под вопросом мастера: прерываем заполнение и возвращаем меню
+    await redis('DEL', key);
+    return void await show(await menuView(), 'Заполнение отменено');
+  }
   if (act === 'h') return void await show(await historyView(Math.max(0, Number(arg) || 0)));
   if (act === 'k'){                                            // закрыть ссылку прямо из списка и обновить список
     const o = await S.closeOrder(arg);
@@ -281,7 +288,7 @@ async function onCallback(cb){
   if (act === 'ra'){                                           // добавить ответ: бот просит прислать текст
     await redis('SET', key, JSON.stringify({ step: 'addreply', group: arg === '5' ? '5' : '3' }), 'EX', 1800);
     await tg.answer(cb.id);
-    return void await say(ctx, `Пришлите текст ответа для отзывов ${groupTitle(arg)}. Имя клиента подставится вместо <code>{name}</code>.\nПишите на «вы» и без форм рода («рад/рада»).`, ask('Текст ответа с {name}'));
+    return void await say(ctx, `Пришлите текст ответа для отзывов ${groupTitle(arg)}. Имя клиента подставится вместо <code>{name}</code>.\nПишите на «вы» и без форм рода («рад/рада»).`, ask());
   }
   if (act === 'rd') return void await show(await pickerView(arg === '5' ? '5' : '3'));
   if (act === 'rx'){                                           // удалить ответ по номеру

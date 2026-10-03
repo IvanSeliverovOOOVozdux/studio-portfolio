@@ -23,7 +23,7 @@ const ok = (name, cond, extra) => { if (!cond) fails++; console.log((cond ? 'OK 
 
   /* --- мастер /new --- */
   await t.say(1001, '/new');
-  ok('мастер: спросил название (force_reply)', /Как называется проект/.test(t.lastSent().body.text) && t.lastSent().body.reply_markup.force_reply === true);
+  ok('мастер: «Шаг 1 из 3», спросил название, под вопросом кнопка «Отмена»', /Шаг 1 из 3/.test(t.lastSent().body.text) && /Как называется проект/.test(t.lastSent().body.text) && JSON.stringify(t.lastSent().body.reply_markup).includes('w:cancel') && !t.lastSent().body.reply_markup.force_reply, t.lastSent().body.reply_markup);
   await t.say(1001, 'Сайт «Soberi Party»');
   ok('мастер: спросил сайт', /ссылку на сайт/.test(t.lastSent().body.text));
   await t.say(1001, 'не сайт');
@@ -181,7 +181,7 @@ const ok = (name, cond, extra) => { if (!cond) fails++; console.log((cond ? 'OK 
 
   // создание ссылки кнопками
   await t.press(1001, 'm:new', 555);
-  ok('кнопка «Новая ссылка»: бот спрашивает название (force_reply)', /Как называется проект/.test(t.lastSent().body.text) && t.lastSent().body.reply_markup.force_reply === true);
+  ok('кнопка «Новая ссылка»: бот спрашивает название, под вопросом «Отмена»', /Как называется проект/.test(t.lastSent().body.text) && JSON.stringify(t.lastSent().body.reply_markup).includes('w:cancel'));
   await t.say(1001, 'Проект из кнопки'); await t.say(1001, 'button-site.ru'); await t.say(1001, '-');
   const linkMsg = t.lastSent(), linkKb = flat(linkMsg), tokenBtn = tokenOf(linkMsg.body.text);
   ok('после мастера кнопки: «Открыть страницу отзыва» (ссылка), «Закрыть ссылку», «В меню»', linkKb.some(b => b.url && b.url.includes('/r/' + tokenBtn)) && hasCb(linkKb, 'c:' + tokenBtn) && hasCb(linkKb, 'm:home'), linkKb);
@@ -195,7 +195,7 @@ const ok = (name, cond, extra) => { if (!cond) fails++; console.log((cond ? 'OK 
   await t.press(1001, 'm:rep', 557);
   ok('кнопка «Ответы студии»: список и кнопки добавить/удалить/вернуть', /4–5★/.test(lastEdit().text) && ['ra:5', 'ra:3', 'rd:5', 'rd:3', 'rr:ask'].every(d => hasCb(lastEdit().reply_markup.inline_keyboard.flat(), d)));
   await t.press(1001, 'ra:5', 557);
-  ok('«Для 4–5★»: бот просит прислать текст (force_reply)', /Пришлите текст ответа/.test(t.lastSent().body.text) && t.lastSent().body.reply_markup.force_reply === true);
+  ok('«Для 4–5★»: бот просит прислать текст, под вопросом «Отмена»', /Пришлите текст ответа/.test(t.lastSent().body.text) && JSON.stringify(t.lastSent().body.reply_markup).includes('w:cancel'));
   await t.say(1001, 'Спасибо за отзыв, {name}! Работать с вами было приятно.');
   ok('присланный текст сохраняется как ответ, есть кнопка «К ответам»', /Добавил \(4–5★/.test(t.lastSent().body.text) && hasCb(flat(t.lastSent()), 'm:rep'), t.lastSent().body.text);
   let tplB = await R.getTemplates();
@@ -210,6 +210,40 @@ const ok = (name, cond, extra) => { if (!cond) fails++; console.log((cond ? 'OK 
   ok('«Вернуть стандартные»: сначала подтверждение (Да/Отмена)', /Вернуть стандартные/.test(lastEdit().text) && hasCb(lastEdit().reply_markup.inline_keyboard.flat(), 'rr:yes'));
   await t.press(1001, 'rr:yes', 557);
   ok('после «Да» ответы сброшены, экран ответов обновлён', /4–5★/.test(lastEdit().text));
+
+  // отмена заполнения кнопкой
+  await t.press(1001, 'm:new', 570);
+  ok('шаг 1: «Шаг 1 из 3» и кнопка «✖ Отмена»', /Шаг 1 из 3/.test(t.lastSent().body.text) && JSON.stringify(t.lastSent().body.reply_markup).includes('w:cancel'));
+  await t.say(1001, 'Отменяемый проект');
+  ok('шаг 2: «Шаг 2 из 3» и кнопка «Отмена»', /Шаг 2 из 3/.test(t.lastSent().body.text) && JSON.stringify(t.lastSent().body.reply_markup).includes('w:cancel'));
+  await t.say(1001, 'не сайт');
+  ok('при ошибке ввода кнопка «Отмена» остаётся', /Не похоже на адрес/.test(t.lastSent().body.text) && JSON.stringify(t.lastSent().body.reply_markup).includes('w:cancel'));
+  const sentBefore = t.sent().length;
+  await t.press(1001, 'w:cancel', 571);
+  ok('«Отмена»: сообщение с вопросом превращается в главное меню, всплывает «Заполнение отменено»', /Выберите действие/.test(lastEdit().text) && t.answers().slice(-1)[0].body.text === 'Заполнение отменено', lastEdit());
+  await t.say(1001, 'soberi.ru');
+  ok('после отмены текст больше не принимается за ответ мастера (бот молчит)', t.sent().length === sentBefore);
+  const ordersBeforeCancel = (await t.get('/api/reviews')).status;   // ничего не создано: открытых ссылок «Отменяемого проекта» нет
+  await t.press(1001, 'm:ord', 572);
+  ok('отменённый мастер ничего не создал: «Отменяемого проекта» нет в открытых ссылках', !/Отменяемый проект/.test(lastEdit().text), lastEdit().text);
+  // отмена добавления ответа
+  const tplCancelBefore = (await R.getTemplates()).positive.length;
+  await t.press(1001, 'ra:5', 573);
+  ok('добавление ответа: под вопросом «Отмена»', JSON.stringify(t.lastSent().body.reply_markup).includes('w:cancel'));
+  await t.press(1001, 'w:cancel', 574);
+  const sentBefore2 = t.sent().length;
+  await t.say(1001, 'Просто разговор в теме, это не должно стать ответом студии.');
+  ok('после отмены обычное сообщение не сохраняется как ответ студии', t.sent().length === sentBefore2 && (await R.getTemplates()).positive.length === tplCancelBefore);
+  // чужая «Отмена» не должна ни прервать мой мастер, ни перерисовать сообщение
+  await t.press(1001, 'm:new', 576);
+  await t.say(1001, 'Проект, который хозяин не отменял');
+  const editsBeforeStranger = t.edits().length;
+  await t.press(9999, 'w:cancel', 577);
+  ok('чужая «Отмена»: доступ закрыт и сообщение не перерисовано', t.answers().slice(-1)[0].body.text === 'Нет доступа' && t.edits().length === editsBeforeStranger);
+  const stillMine = t.sent().length;
+  await t.say(1001, 'strange-site.ru');
+  ok('мастер владельца после чужой «Отмены» продолжает работать (спрашивает имя клиента)', t.sent().length === stillMine + 1 && /Шаг 3 из 3/.test(t.lastSent().body.text), t.lastSent().body.text);
+  await t.press(1001, 'w:cancel', 578);                  // убираем за собой незавершённый мастер
 
   // карточка отзыва: кнопка-ссылка на сайт клиента
   const cardKb = card1.body.reply_markup.inline_keyboard;
