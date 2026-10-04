@@ -219,7 +219,7 @@
     foot.hidden = false;
     var href = safeUrl(o.siteUrl);
     // палитра и смайлики приходят с сервера (он же проверяет, что присланное есть в списке)
-    var AV = { colors: (o.avatars && o.avatars.colors && o.avatars.colors.length) ? o.avatars.colors : [{ c: '#9e2b45', n: 'Гранат' }], emojis: (o.avatars && o.avatars.emojis) || [] };
+    var AV = { colors: (o.avatars && o.avatars.colors && o.avatars.colors.length) ? o.avatars.colors : [{ c: '#d1344f', n: 'Гранат' }], emojis: (o.avatars && o.avatars.emojis) || [] };
     put(
       '<div class="kick">Отзыв о проекте</div><h1>' + esc(o.product) + '</h1>' +
       (href ? '<a class="site" href="' + esc(href) + '" target="_blank" rel="noopener noreferrer" aria-label="Открыть сайт ' + esc(o.siteLabel) + ' в новой вкладке"><span>' + esc(o.siteLabel) + '</span><i>' + ARROW + '</i></a>' : '') +

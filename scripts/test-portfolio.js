@@ -29,7 +29,7 @@ const ok = (n, c, x) => { if (!c) fails++; console.log((c ? 'OK   ' : 'FAIL ') +
     const rid = t.lastSent().body.reply_markup.inline_keyboard[0][0].callback_data.split(':')[1];
     await sleep(2100); await t.press(1002, 'a:' + rid, 100 + Math.floor(Math.random() * 1e4)); return rid;
   };
-  await mk('/new Сайт кофейни «Мякиш» | myakish.ru | Денис', 5, 'Денис Орлов', 'Сделали быстро и аккуратно, гости сразу заметили новое меню.', '10.0.0.5', { avatarColor: '#3f7a58', avatarEmoji: '🦊' });
+  await mk('/new Сайт кофейни «Мякиш» | myakish.ru | Денис', 5, 'Денис Орлов', 'Сделали быстро и аккуратно, гости сразу заметили новое меню.', '10.0.0.5', { avatarColor: '#2e9d5f', avatarEmoji: '🦊' });
   await mk('/new Цветочная студия | len-polyn.ru | Марина', 5, 'Марина Литвинова', 'Сайт заработал в тот же вечер, как мы его запустили, заявки пошли с телефона.', '10.0.0.6', { avatarColor: '#6b5b95' });
   await mk('/new Сайт юриста | weiss-law.ru | Олег', 2, 'Олег Смирнов', 'Были задержки по срокам, хотелось бы, чтобы отвечали быстрее.', '10.0.0.7');
   const api = (await (await t.get('/api/reviews')).json()).reviews;
@@ -95,7 +95,7 @@ const ok = (n, c, x) => { if (!c) fails++; console.log((c ? 'OK   ' : 'FAIL ') +
   ok('«вперёд»: 03/03, Денис Орлов', await wait(async () => (await counter()) === '03/03' && (await lastClient()) === 'Денис Орлов', 8000), [await counter(), await lastClient()]);
   await wait(async () => { const a = await avOf(); return a && a.text === '🦊'; }, 4000);
   const ava3 = await avOf();
-  ok('Денис выбрал смайлик 🦊 и зелёный: в аватарке смайлик, фон rgb(63, 122, 88), имя того же цвета', ava3 && ava3.text === '🦊' && ava3.emoji && ava3.bg === 'rgb(63, 122, 88)' && ava3.nameColor === ava3.bg, ava3);
+  ok('Денис выбрал смайлик 🦊 и зелёный: в аватарке смайлик, фон rgb(46, 157, 95), имя того же цвета', ava3 && ava3.text === '🦊' && ava3.emoji && ava3.bg === 'rgb(46, 157, 95)' && ava3.nameColor === ava3.bg, ava3);
   await sleep(1700); await (await p.$('#revChat')).screenshot({ path: path.join(OUT, 'portfolio-avatar-emoji.png') });
   await p.$eval('[data-nav="1"]', b => b.click());
   ok('«вперёд» с последнего замыкает круг: 01/03', await wait(async () => (await counter()) === '01/03', 8000), await counter());

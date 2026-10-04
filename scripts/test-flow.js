@@ -326,23 +326,23 @@ const ok = (name, cond, extra) => { if (!cond) fails++; console.log((cond ? 'OK 
   const base = { token: tokenAv, rating: 5, name: 'Иван Селиверов', role: '', text: 'Проверяем выбор аватарки клиентом, отзыв достаточно длинный.', consent: true };
   const sub = (extra, ip) => t.post('/api/submit', Object.assign({}, base, extra), ip || '10.0.0.41');
   let rv = await sub({ avatarColor: '#ff0000' }); ok('цвет вне палитры → 400 (fields.avatar)', rv.status === 400 && (await rv.json()).fields.avatar);
-  rv = await sub({ avatarColor: '#3f7a58', avatarEmoji: '💩' }); ok('смайлик вне набора → 400', rv.status === 400);
+  rv = await sub({ avatarColor: '#2e9d5f', avatarEmoji: '💩' }); ok('смайлик вне набора → 400', rv.status === 400);
   rv = await sub({ avatarEmoji: '🦊' }); ok('смайлик без цвета → 400', rv.status === 400);
   rv = await sub({ avatarColor: '<script>', avatarEmoji: '' }); ok('мусор вместо цвета → 400', rv.status === 400);
-  rv = await sub({ avatarColor: '#3F7A58', avatarEmoji: '🦊' });
+  rv = await sub({ avatarColor: '#2E9D5F', avatarEmoji: '🦊' });
   ok('корректный выбор (цвет в любом регистре + смайлик) принят', rv.status === 200);
   const cardAv = t.lastSent(), idAv = reviewIdOf(cardAv), recAv = await S2.getReview(idAv);
-  ok('в базе сохранена аватарка {c, e}', recAv.avatar && recAv.avatar.c === '#3f7a58' && recAv.avatar.e === '🦊', recAv.avatar);
-  ok('в карточке модераторам видно, что выбрал клиент', /Аватар: 🦊 · Зелень/.test(cardAv.body.text), cardAv.body.text);
+  ok('в базе сохранена аватарка {c, e}', recAv.avatar && recAv.avatar.c === '#2e9d5f' && recAv.avatar.e === '🦊', recAv.avatar);
+  ok('в карточке модераторам видно, что выбрал клиент', /Аватар: 🦊 · Изумруд/.test(cardAv.body.text), cardAv.body.text);
   await sleep(2100); await t.press(1002, 'a:' + idAv, recAv.messageId);
   const pubAv = (await (await t.get('/api/reviews')).json()).reviews.find(x => x.id === idAv);
-  ok('сайт получает аватарку отзыва', pubAv && pubAv.avatar && pubAv.avatar.c === '#3f7a58' && pubAv.avatar.e === '🦊', pubAv);
+  ok('сайт получает аватарку отзыва', pubAv && pubAv.avatar && pubAv.avatar.c === '#2e9d5f' && pubAv.avatar.e === '🦊', pubAv);
   // буквы вместо смайлика
   await t.say(1001, '/new Аватарки 2 | avatars-test2.ru | Себастьян');
   const tokenAv2 = tokenOf(t.lastSent().body.text);
-  rv = await t.post('/api/submit', { token: tokenAv2, rating: 4, name: 'Иван Селиверов', role: '', text: 'Второй отзыв: аватарка буквами имени, цвет выбран вручную.', consent: true, avatarColor: '#6b5b95', avatarEmoji: '' }, '10.0.0.42');
+  rv = await t.post('/api/submit', { token: tokenAv2, rating: 4, name: 'Иван Селиверов', role: '', text: 'Второй отзыв: аватарка буквами имени, цвет выбран вручную.', consent: true, avatarColor: '#7a5af0', avatarEmoji: '' }, '10.0.0.42');
   const cardAv2 = t.lastSent(), recAv2 = await S2.getReview(reviewIdOf(cardAv2));
-  ok('буквы: сохранено {c, e: null}, в карточке «буквы ИС · Лаванда»', rv.status === 200 && recAv2.avatar.c === '#6b5b95' && recAv2.avatar.e === null && /Аватар: буквы ИС · Лаванда/.test(cardAv2.body.text), [recAv2.avatar, cardAv2.body.text]);
+  ok('буквы: сохранено {c, e: null}, в карточке «буквы ИС · Фиолет»', rv.status === 200 && recAv2.avatar.c === '#7a5af0' && recAv2.avatar.e === null && /Аватар: буквы ИС · Фиолет/.test(cardAv2.body.text), [recAv2.avatar, cardAv2.body.text]);
   // выбор не обязателен: без него отзыв проходит, аватарка null (сайт покажет цвет по умолчанию и буквы)
   await t.say(1001, '/new Аватарки 3 | avatars-test3.ru | Анна');
   rv = await t.post('/api/submit', { token: tokenOf(t.lastSent().body.text), rating: 5, name: 'Анна', role: '', text: 'Третий отзыв без выбора аватарки: всё равно должен приниматься.', consent: true }, '10.0.0.43');

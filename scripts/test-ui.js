@@ -112,11 +112,11 @@ const ok = (n, c, x) => { if (!c) fails++; console.log((c ? 'OK   ' : 'FAIL ') +
   ok('переключатель, плитки смайликов и цвета сдвинуты влево на 2 px (не правее текста): ' + [al.seg, al.tile, al.color].map(x => x.toFixed(1)).join(' / '), [al.seg, al.tile, al.color].every(x => x <= 0.2 && x >= -2.8), al);
   await p.click('#emojis [data-emoji="🦊"]'); pv = await prev();
   ok('выбран смайлик 🦊: он стоит в аватарке', pv.text === '🦊' && pv.emoji, pv);
-  await p.click('[data-color="#3f7a58"]'); await sleep(400); pv = await prev();
-  ok('выбран цвет «Зелень»: фон аватарки и цвет имени совпадают (rgb(63, 122, 88))', pv.bg === 'rgb(63, 122, 88)' && pv.nameColor === 'rgb(63, 122, 88)', pv);
-  ok('выбранные цвет и смайлик отмечены (aria-checked)', await p.$eval('[data-color="#3f7a58"]', e => e.getAttribute('aria-checked') === 'true') && await p.$eval('#emojis [data-emoji="🦊"]', e => e.getAttribute('aria-checked') === 'true'));
+  await p.click('[data-color="#2e9d5f"]'); await sleep(400); pv = await prev();
+  ok('выбран цвет «Изумруд»: фон аватарки и цвет имени совпадают (rgb(46, 157, 95))', pv.bg === 'rgb(46, 157, 95)' && pv.nameColor === 'rgb(46, 157, 95)', pv);
+  ok('выбранные цвет и смайлик отмечены (aria-checked)', await p.$eval('[data-color="#2e9d5f"]', e => e.getAttribute('aria-checked') === 'true') && await p.$eval('#emojis [data-emoji="🦊"]', e => e.getAttribute('aria-checked') === 'true'));
   await p.click('[data-mode="letters"]'); pv = await prev(); await sleep(1200);
-  ok('назад к буквам: снова «С», цвет сохранился', pv.text === 'С' && pv.bg === 'rgb(63, 122, 88)' && !pv.emoji, pv);
+  ok('назад к буквам: снова «С», цвет сохранился', pv.text === 'С' && pv.bg === 'rgb(46, 157, 95)' && !pv.emoji, pv);
   await p.click('[data-mode="emoji"]'); pv = await prev(); await sleep(800);
   ok('при возврате к смайликам прежний смайлик на месте (🦊)', pv.text === '🦊', pv);
   await p.screenshot({ path: path.join(OUT, 'review-form-avatar.png'), fullPage: true });
@@ -125,7 +125,7 @@ const ok = (n, c, x) => { if (!c) fails++; console.log((c ? 'OK   ' : 'FAIL ') +
   ok('после отправки: экран «Спасибо»', /Спасибо за отзыв/.test(await p.$eval('h1', e => e.textContent)));
   const card = t.lastSent();
   ok('в бот пришла карточка с проектом, оценкой и текстом', /Мякиш/.test(card.body.text) && /★★★★☆/.test(card.body.text) && /гости сразу заметили/.test(card.body.text) && /Шеф-пекарь/.test(card.body.text));
-  ok('в карточке для модераторов указан выбор аватарки (🦊, Зелень)', /Аватар: 🦊 · Зелень/.test(card.body.text), card.body.text);
+  ok('в карточке для модераторов указан выбор аватарки (🦊, Изумруд)', /Аватар: 🦊 · Изумруд/.test(card.body.text), card.body.text);
   await p.screenshot({ path: path.join(OUT, 'review-thanks.png') });
 
   // повторное открытие той же ссылки
