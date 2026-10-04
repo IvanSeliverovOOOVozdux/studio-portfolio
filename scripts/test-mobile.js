@@ -64,6 +64,18 @@ const LANDSCAPE = [[667, 375], [844, 390]];
     if (w === 390) await p.screenshot({ path: path.join(OUT, 'mobile-scene-end.png') });
   }
 
+  // ---------- крупные заголовки кейсов («SOBERI PARTY» и др.): целиком в экране, поля слева и справа равны ----------
+  const titleSym = () => p.evaluate(() => Array.from(document.querySelectorAll('.scene')).map(sc => {
+    const row = sc.querySelector('.case-title span'), ls = Array.from(row.querySelectorAll('i:not(.sp)')), fs = parseFloat(getComputedStyle(row).fontSize);
+    const l = ls[0].getBoundingClientRect().left, r = innerWidth - ls[ls.length - 1].getBoundingClientRect().right;
+    return { name: sc.querySelector('.scene-label').textContent.replace(/^.*— /, ''), left: +l.toFixed(1), right: +r.toFixed(1), fs: +fs.toFixed(1), tol: fs * .05 + 2 };
+  }));
+  for (const [w, h, mob] of [[320, 568, 1], [360, 740, 1], [390, 844, 1], [430, 932, 1], [768, 1024, 1], [1366, 768, 0], [1440, 900, 0], [1920, 1080, 0], [2560, 1440, 0]]) {
+    await p.setViewport({ width: w, height: h, isMobile: !!mob, hasTouch: !!mob, deviceScaleFactor: 1 }); await p.goto(t.BASE + '/', { waitUntil: 'networkidle0' }); await sleep(900);
+    const rows = await titleSym();
+    ok(`${w}×${h}: заголовки кейсов целиком в экране, поля слева и справа равны (${rows.map(r => `${r.name}: ${r.left}/${r.right}`).join('; ')})`, rows.every(r => r.left >= 8 && r.right >= 8 && Math.abs(r.left - r.right) <= r.tol), rows);
+  }
+
   // ---------- ландшафт ----------
   for (const [w, h] of LANDSCAPE) {
     await open(w, h);

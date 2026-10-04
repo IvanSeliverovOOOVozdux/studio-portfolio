@@ -37,13 +37,13 @@
   .brand span{ font-weight:500; font-size:15px; letter-spacing:.36em; text-transform:uppercase; padding-left:.36em; }
 
   main{ max-width:680px; margin:0 auto; padding:clamp(16px,4vh,48px) clamp(20px,5vw,32px) 80px; }
-  .kick{ font-family:"JetBrains Mono"; font-size:12px; letter-spacing:.22em; text-transform:uppercase; color:var(--garnet); margin-bottom:18px; }
+  .kick{ font-family:"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace; font-size:12px; letter-spacing:.22em; text-transform:uppercase; color:var(--garnet); margin-bottom:18px; }
   h1{ font-family:"Bricolage Grotesque", system-ui, sans-serif; font-weight:800; font-size:clamp(32px,7vw,56px); line-height:1; letter-spacing:-.03em; text-wrap:balance; overflow-wrap:anywhere; }
   .lead{ margin-top:18px; color:var(--ink-2); font-size:17px; line-height:1.6; max-width:52ch; }
 
   /* ссылка на сайт клиента */
   .site{ position:relative; display:inline-flex; align-items:center; gap:9px; max-width:100%; margin-top:20px; padding:5px 6px 5px 14px; border-radius:999px; text-decoration:none; color:var(--garnet);
-    border:1px solid color-mix(in srgb, var(--garnet) 42%, transparent); font-family:"JetBrains Mono"; font-size:13px; line-height:1; transition:background .25s, border-color .25s; }
+    border:1px solid color-mix(in srgb, var(--garnet) 42%, transparent); font-family:"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace; font-size:13px; line-height:1; transition:background .25s, border-color .25s; }
   .site::after{ content:""; position:absolute; inset:-9px -4px; }
   .site span{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .site i{ flex:none; width:26px; height:26px; border-radius:50%; display:grid; place-items:center; background:color-mix(in srgb, var(--garnet) 14%, transparent); transition:background .25s, color .25s; }
@@ -54,7 +54,7 @@
   /* форма */
   form{ margin-top:clamp(28px,5vh,44px); display:flex; flex-direction:column; gap:26px; }
   .fld{ border:0; display:flex; flex-direction:column; gap:10px; min-width:0; }
-  .fld > legend, .fld > label.lbl{ font-family:"JetBrains Mono"; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-2); padding:0; display:flex; justify-content:space-between; gap:12px; }
+  .fld > legend, .fld > label.lbl{ font-family:"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-2); padding:0; display:flex; justify-content:space-between; gap:12px; }
   .opt{ text-transform:none; letter-spacing:0; opacity:.7; }
   input[type=text], textarea{
     font:400 16px "Hanken Grotesk", system-ui, sans-serif; color:var(--ink); background:#fff; border:1px solid var(--line); border-radius:14px; padding:14px 16px; min-height:52px; width:100%;
@@ -63,7 +63,7 @@
   textarea{ min-height:170px; resize:none; line-height:1.55; }      /* resize:none убирает «ручку» изменения размера в правом нижнем углу */
   input:focus, textarea:focus{ outline:none; border-color:var(--garnet); box-shadow:0 0 0 3px color-mix(in srgb, var(--garnet) 18%, transparent); }
   .hint{ font-size:13.5px; color:var(--ink-2); }
-  .count{ font-family:"JetBrains Mono"; font-size:12px; color:var(--ink-2); text-align:right; }
+  .count{ font-family:"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace; font-size:12px; color:var(--ink-2); text-align:right; }
   .err{ font-size:14px; color:var(--err); min-height:0; }
   .err:empty{ display:none; }
   [aria-invalid="true"]{ border-color:var(--err) !important; }
@@ -113,7 +113,7 @@
   .avpick.busy .seg button:not([aria-checked="true"]){ cursor:default; opacity:.6; }       /* пока идёт анимация, переключатель на время недоступен (курсор обычный, без «кружка загрузки») */
   .emojis button:hover{ transform:translateY(-2px); }
   .emojis button[aria-checked="true"]{ border-color:var(--avc); background:color-mix(in srgb, var(--avc) 9%, #fff); box-shadow:0 0 0 3px color-mix(in srgb, var(--avc) 24%, transparent); }
-  .sublbl{ font-family:"JetBrains Mono"; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-2); margin-bottom:10px; }
+  .sublbl{ font-family:"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-2); margin-bottom:10px; }
   .colors{ display:flex; flex-wrap:wrap; gap:12px; margin-left:-2px; }
   .colors button{ position:relative; width:36px; height:36px; border-radius:50%; background:var(--c); box-shadow:0 0 0 1px var(--line); transition:transform .2s var(--ease), box-shadow .2s; }
   .colors button::after{ content:""; position:absolute; inset:-5px; }
@@ -160,7 +160,7 @@
   @keyframes sh{ to{ background-position:-200% 0; } }
   .retry{ margin-top:22px; min-height:48px; padding:0 24px; border-radius:999px; border:1px solid var(--ink); font-weight:600; transition:background .25s, color .25s; }
   .retry:hover{ background:var(--ink); color:var(--bone); }
-  footer{ max-width:680px; margin:0 auto; padding:0 clamp(20px,5vw,32px) 40px; font-family:"JetBrains Mono"; font-size:12px; color:var(--ink-2); line-height:1.6; }
+  footer{ max-width:680px; margin:0 auto; padding:0 clamp(20px,5vw,32px) 40px; font-family:"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace; font-size:12px; color:var(--ink-2); line-height:1.6; }
 
   @media(prefers-reduced-motion:reduce){ *,*::before,*::after{ animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; } }
 </style>
