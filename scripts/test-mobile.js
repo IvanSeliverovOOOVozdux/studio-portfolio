@@ -74,6 +74,8 @@ const LANDSCAPE = [[667, 375], [844, 390]];
     await p.setViewport({ width: w, height: h, isMobile: !!mob, hasTouch: !!mob, deviceScaleFactor: 1 }); await p.goto(t.BASE + '/', { waitUntil: 'networkidle0' }); await sleep(900);
     const rows = await titleSym();
     const rw = await p.evaluate(() => Array.from(document.querySelectorAll('.scene')).map(sc => { const r = Array.from(sc.querySelectorAll('.case-title span')).filter(e => e.getClientRects().length).map(e => e.getBoundingClientRect()); let gap = 0; for (let i = 1; i < r.length; i++) gap = Math.max(gap, r[i].top - r[i - 1].bottom); return { n: r.length, gap: Math.round(gap) }; }));
+    const fit = await p.evaluate(() => { const sc = document.querySelector('.scene'), r = sc.getBoundingClientRect(), rows = Array.from(sc.querySelectorAll('.case-title span')).filter(e => e.getClientRects().length); return { sceneH: Math.round(r.height), vh: innerHeight, lastBottom: Math.round(rows[rows.length - 1].offsetTop + rows[rows.length - 1].offsetHeight) }; });
+    ok(`${w}×${h}: сцена по высоте ровно в экран (${fit.sceneH} из ${fit.vh} px), нижний ряд названий не уходит за нижний край`, fit.sceneH === fit.vh && fit.lastBottom <= fit.vh + 2, fit);
     const wantN = mob && h > w ? 7 : 4;
     ok(`${w}×${h}: строк-названий на фоне кейса ${wantN} (на телефоне в портрете — 7, пустых промежутков нет: макс. зазор ${Math.max(...rw.map(x => x.gap))} px), на компьютере и в ландшафте 4`, rw.every(x => x.n === wantN) && (wantN === 4 || rw.every(x => x.gap <= h * .14)), rw);
     ok(`${w}×${h}: заголовки кейсов целиком в экране, поля слева и справа равны (${rows.map(r => `${r.name}: ${r.left}/${r.right}`).join('; ')})`, rows.every(r => r.left >= 8 && r.right >= 8 && Math.abs(r.left - r.right) <= r.tol), rows);

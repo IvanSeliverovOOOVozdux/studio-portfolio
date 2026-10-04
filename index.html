@@ -156,7 +156,7 @@
 
   /* ---------- HERO (контур + барабан ниши) ---------- */
   .hero{
-    position:relative; min-height:100vh; min-height:100svh; display:flex; flex-direction:column;   /* svh: высота не прыгает, когда на телефоне прячется адресная строка (иначе сдвигаются точки старта сцен) */
+    position:relative; min-height:100vh; display:flex; flex-direction:column;
     /* сверху резервируем высоту шапки (она лежит поверх hero), чтобы контент не заезжал под неё на низких экранах */
     padding:calc(var(--head-h) + clamp(12px,3vh,36px)) clamp(20px,5vw,64px) clamp(26px,5vh,52px);
     background:
@@ -224,9 +224,13 @@
   /* ---------- SHOWCASE SCENE ---------- */
   /* Закрепление сцены — нативный position:sticky внутри «трека» (раньше JS-закрепление ScrollTrigger: на iPhone оно дёргалось и лагало).
      Высота трека = высота экрана + путь прокрутки: на компьютере 360%, на телефоне 260% */
-  .scene-track{ position:relative; height:460vh; height:calc(100lvh * 4.6); }
+  .scene-track{ position:relative; height:460vh; }
+  .scene{ position:sticky; top:0; height:100vh; }
+  /* Только телефон: svh у первого экрана (не прыгает, когда прячется адресная строка), lvh у сцены (нет полосы снизу). На компьютере — обычные vh:
+     там lvh/svh в некоторых браузерах (например, Яндекс.Браузер в полном экране) отличаются от видимой высоты, и нижний ряд названий уезжал под панель задач. */
+  .lite .hero{ min-height:100svh; }
   .lite .scene-track{ height:360vh; height:calc(100lvh * 3.6); }
-  .scene{ position:sticky; top:0; height:100vh; height:100lvh; }   /* lvh: самая большая высота экрана — закреплённая сцена не оставляет полосу снизу, когда на телефоне прячется адресная строка */
+  .lite .scene{ height:100vh; height:100lvh; }
   .stage{
     position:absolute; inset:0; overflow:hidden;
     display:flex; align-items:center; justify-content:center;
