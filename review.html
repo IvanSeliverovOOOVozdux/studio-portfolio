@@ -110,7 +110,7 @@
   .emo-wrap[data-state="closing"] .emojis button{ animation:emojiOut .34s cubic-bezier(.5,0,.8,.4) both; animation-delay:calc((var(--n, 24) - 1 - var(--i, 0)) * 16ms); }
   @keyframes emojiIn{ from{ opacity:0; transform:translateY(10px) scale(.6); } to{ opacity:1; transform:none; } }
   @keyframes emojiOut{ from{ opacity:1; transform:none; } to{ opacity:0; transform:translateY(10px) scale(.6); } }
-  .avpick.busy .seg button:not([aria-checked="true"]){ cursor:progress; opacity:.6; }       /* пока идёт анимация, переключатель на время недоступен */
+  .avpick.busy .seg button:not([aria-checked="true"]){ cursor:default; opacity:.6; }       /* пока идёт анимация, переключатель на время недоступен (курсор обычный, без «кружка загрузки») */
   .emojis button:hover{ transform:translateY(-2px); }
   .emojis button[aria-checked="true"]{ border-color:var(--avc); background:color-mix(in srgb, var(--avc) 9%, #fff); box-shadow:0 0 0 3px color-mix(in srgb, var(--avc) 24%, transparent); }
   .sublbl{ font-family:"JetBrains Mono"; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-2); margin-bottom:10px; }
@@ -139,7 +139,7 @@
   @media(min-width:560px){ .submit{ width:auto; } }
   .submit:hover:not(:disabled){ transform:translateY(-2px); background:var(--garnet-2); }
   .submit:active:not(:disabled){ transform:scale(.98); }
-  .submit:disabled{ opacity:.7; cursor:progress; }
+  .submit:disabled{ opacity:.7; cursor:default; }
   .spin{ width:18px; height:18px; border-radius:50%; border:2px solid rgba(255,255,255,.4); border-top-color:#fff; animation:spin .8s linear infinite; display:none; }
   .submit.busy .spin{ display:block; }
   @keyframes spin{ to{ transform:rotate(360deg); } }

@@ -30,7 +30,7 @@ const ok = (n, c, x) => { if (!c) fails++; console.log((c ? 'OK   ' : 'FAIL ') +
     await sleep(2100); await t.press(1002, 'a:' + rid, 100 + Math.floor(Math.random() * 1e4)); return rid;
   };
   await mk('/new Сайт кофейни «Мякиш» | myakish.ru | Денис', 5, 'Денис Орлов', 'Сделали быстро и аккуратно, гости сразу заметили новое меню.', '10.0.0.5', { avatarColor: '#2e9d5f', avatarEmoji: '🦊' });
-  await mk('/new Цветочная студия | len-polyn.ru | Марина', 5, 'Марина Литвинова', 'Сайт заработал в тот же вечер, как мы его запустили, заявки пошли с телефона.', '10.0.0.6', { avatarColor: '#6b5b95' });
+  await mk('/new Цветочная студия | len-polyn.ru | Марина', 5, 'Марина Литвинова', 'Сайт заработал в тот же вечер, как мы его запустили, заявки пошли с телефона.', '10.0.0.6', { avatarColor: '#7a5af0' });
   await mk('/new Сайт юриста | weiss-law.ru | Олег', 2, 'Олег Смирнов', 'Были задержки по срокам, хотелось бы, чтобы отвечали быстрее.', '10.0.0.7');
   const api = (await (await t.get('/api/reviews')).json()).reviews;
   ok('API отдаёт 3 отзыва, у каждого готовый ответ с именем, без шаблонных скобок и без лайков', api.length === 3 && api.every(r => r.reply && !/\{/.test(r.reply) && r.reply.includes(r.name.split(' ')[0]) && !('likes' in r)), api.map(r => r.reply));
@@ -61,7 +61,7 @@ const ok = (n, c, x) => { if (!c) fails++; console.log((c ? 'OK   ' : 'FAIL ') +
   let e = await ev();
   const avOf = () => p.evaluate(() => { const m = document.querySelector('#revBody .rev-msg.in:not(:has(.rev-typing))'); if (!m) return null; const a = m.querySelector('.rev-ava'), n = m.querySelector('.nm'); return { text: a.textContent, emoji: a.classList.contains('emoji'), bg: getComputedStyle(a).backgroundColor, nameColor: getComputedStyle(n).color }; });
   const ava1 = await avOf();
-  ok('отзыв без выбранной аватарки (Олег): буквы «ОС», запасной цвет, имя того же цвета', ava1 && ava1.text === 'ОС' && !ava1.emoji && ava1.bg === 'rgb(158, 43, 69)' && ava1.nameColor === ava1.bg, ava1);
+  ok('отзыв без выбранной аватарки (Олег): буквы «ОС», запасной цвет, имя того же цвета', ava1 && ava1.text === 'ОС' && !ava1.emoji && ava1.bg === 'rgb(209, 52, 79)' && ava1.nameColor === ava1.bg, ava1);
   const reply1 = e.find(x => x.ev === '+ студия сообщение');
   ok('ответ студии обращается по имени и подходит под критичный отзыв', reply1 && reply1.text.includes('Олег') && /честн|откровен|поделились|ценим/.test(reply1.text), reply1);
   const d = (a, b) => (e.find(x => x.ev === b) || {}).at - (e.find(x => x.ev === a) || {}).at;
@@ -86,7 +86,7 @@ const ok = (n, c, x) => { if (!c) fails++; console.log((c ? 'OK   ' : 'FAIL ') +
   ok('после ухода экран очищается и идёт следующий отзыв (02/03, Марина Литвинова)', await wait(async () => (await counter()) === '02/03' && (await lastClient()) === 'Марина Литвинова', 6000), [await counter(), await lastClient()]);
   await wait(async () => (await ev()).some(x => x.ev === '+ клиент сообщение' && x.name === 'Марина Литвинова'), 6000);
   const ava2 = await avOf();
-  ok('Марина выбрала фиолетовый цвет и буквы: «МЛ» на rgb(107, 91, 149), имя того же цвета', ava2 && ava2.text === 'МЛ' && !ava2.emoji && ava2.bg === 'rgb(107, 91, 149)' && ava2.nameColor === ava2.bg, ava2);
+  ok('Марина выбрала фиолетовый цвет и буквы: «МЛ» на rgb(122, 90, 240), имя того же цвета', ava2 && ava2.text === 'МЛ' && !ava2.emoji && ava2.bg === 'rgb(122, 90, 240)' && ava2.nameColor === ava2.bg, ava2);
   const m2 = await wait(async () => (await ev()).some(x => x.ev === '+ студия сообщение' && x.text.includes('Марина')), 6000);
   ok('у Марины (5★) ответ хвалебный, с её именем', m2);
 

@@ -91,6 +91,7 @@ const ok = (n, c, x) => { if (!c) fails++; console.log((c ? 'OK   ' : 'FAIL ') +
     return { state: document.getElementById('emoWrap').dataset.state, name: cs[0].animationName, d0: cs[0].animationDelay, d22: cs[22].animationDelay, d23: cs[23].animationDelay, busy: document.getElementById('avpick').classList.contains('busy') }; });
   ok('сворачивание: плитки уходят в обратном порядке (последняя без задержки, первая — самая поздняя: 368 мс)', out.state === 'closing' && out.name === 'emojiOut' && out.d23 === '0s' && out.d22 === '0.016s' && out.d0 === '0.368s', out);
   ok('пока смайлики пропадают, переключатель помечен занятым', out.busy);
+  ok('в это время у мыши нет «кружка загрузки» (курсор не progress/wait)', await p.$$eval('.seg button, #emojis button, .submit, #avpick', a => a.every(b => !/progress|wait/.test(getComputedStyle(b).cursor))));
   await p.click('[data-mode="emoji"]'); await sleep(80);
   ok('быстро нажать «Смайлик», пока смайлики не пропали, нельзя', await emoState() === 'closing' && (await prev()).emoji === false);
   const tilesMid = await p.evaluate(() => Array.from(document.querySelectorAll('#emojis button')).map(b => +getComputedStyle(b).opacity));
