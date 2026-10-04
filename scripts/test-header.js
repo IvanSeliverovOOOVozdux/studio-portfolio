@@ -50,6 +50,8 @@ const ok = (n, c, x) => { if (!c) fails++; console.log((c ? 'OK   ' : 'FAIL ') +
   await scrollTo(topPrice + 60);                              // небольшая прокрутка вверх возвращает шапку
   await p.click('#navPill a[data-sec="about"]'); await sleep(400);
   ok('после клика по пункту шапка остаётся на виду (не прячется при прыжке)', await p.$eval('#siteHead', e => !e.classList.contains('away')));
+  await p.click('#navPill a[data-sec="contact"]'); await sleep(500);
+  ok('клик по «Контакты» прокручивает в самый низ, и пункт «Контакты» подсвечивается (а не остаётся «Прайс»)', await p.evaluate(() => innerHeight + scrollY >= document.documentElement.scrollHeight - 4) && await p.$eval('#navPill a[aria-current]', a => a.dataset.sec) === 'contact');
   await scrollTo(0); await sleep(200);
   ok('возврат в начало: шапка снова прозрачная, подсветки нет', await p.$eval('#siteHead', e => !e.classList.contains('solid')) && await p.$$eval('#navPill a[aria-current]', a => a.length) === 0);
   await open(1440, 900);                                      // чистая страница: после перехода по якорю Tab начинается от раздела

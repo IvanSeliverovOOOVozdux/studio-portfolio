@@ -699,6 +699,8 @@
       }
       function section(){
         var line = window.innerHeight * 0.4, found = '';
+        /* у самого низа страницы последний раздел («Контакты») не может подняться до линии — считаем его текущим, иначе пункт не подсветится */
+        if (window.innerHeight + window.pageYOffset >= document.documentElement.scrollHeight - 4) return ids[ids.length - 1];
         for (var i = 0; i < ids.length; i++){
           var el = document.getElementById(ids[i]); if (!el || el.hidden) continue;
           var r = el.getBoundingClientRect();
