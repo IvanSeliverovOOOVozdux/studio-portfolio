@@ -270,6 +270,9 @@
     visibility:hidden; will-change:transform,opacity;
   }
   .case-title span i{ font-style:normal; display:block; }
+  .case-title span.x{ display:none; }                           /* дополнительные строки — только телефон (.lite) и только в портрете */
+  .lite .case-title span.x{ display:flex; }
+  @media (orientation:landscape){ .lite .case-title span.x{ display:none; } }
   .case-title span i.sp{ width:2.5vw; }   /* пробел между словами */
 
   /* внешняя 2D-обёртка: scale / y / opacity (НЕ 3D — чтобы не плющить грани) */
@@ -892,7 +895,8 @@
     function sceneHTML(c, i){
       const base = i === 0 ? HERO_BG : CASES[i-1].fill;
       const num = String(i+1).padStart(2,'0');
-      const rows = [1,0.75,0.5,0.25].map(function(o){ return '<span data-o="'+o+'" style="--o:'+o+'">'+c.title+'</span>'; }).join('');
+      /* на телефоне в промежутки между четырьмя строками добавлены ещё три (класс x, прозрачность — посередине между соседними): иначе на высоком экране там пусто */
+      const rows = [1,0.875,0.75,0.625,0.5,0.375,0.25].map(function(o, i){ return '<span class="'+(i % 2 ? 'x' : '')+'" data-o="'+o+'" style="--o:'+o+'">'+c.title+'</span>'; }).join('');
       return '<div class="scene-track"><section class="scene'+(c.dark?' scene-dark':'')+'" style="--base:'+base+';--fill:'+c.fill+';--glow:'+c.glow+';--stext:'+c.stext+';--inv-base:'+inv(base)+';--inv-fill:'+inv(c.fill)+'">'+
         '<div class="stage">'+
           '<div class="fill"><i class="disc"></i><i class="glow"></i></div>'+
@@ -1012,8 +1016,9 @@
       tl.fromTo(cardScale, { autoAlpha:0 }, { autoAlpha:1, ease:'power1.out', duration:.08 }, 0);
       tl.fromTo(cardScale, { y:function(){ return -vh()*0.34; }, scale:.09 }, { y:0, scale:endScale, ease:'power2.out', duration:1 }, 0);
       tl.fromTo(card3d, { rotateX:0, rotateZ:0 }, { rotateX:2520, rotateZ:720, ease:'power2.out', duration:1 }, 0);
-      spans.forEach(function(el,i){ const o=parseFloat(el.dataset.o); const order=spans.length-1-i;
-        tl.fromTo(el, { opacity:0, visibility:'hidden', yPercent:70 }, { opacity:o, visibility:'visible', yPercent:0, ease:'power2.out', duration:.32 }, order*0.07); });
+      const shown = spans.filter(function(el){ return lite || !el.classList.contains('x'); });      // строки, которые есть на этом устройстве (на компьютере — четыре)
+      spans.forEach(function(el){ const o=parseFloat(el.dataset.o); const order=Math.max(0, shown.length-1-shown.indexOf(el));
+        tl.fromTo(el, { opacity:0, visibility:'hidden', yPercent:70 }, { opacity:o, visibility:'visible', yPercent:0, ease:'power2.out', duration:.32 }, order*(lite ? 0.045 : 0.07)); });
       if (lite){
         tl.fromTo(disc, { scale:0 }, { scale:1, ease:'power2.inOut', duration:.67 }, .15);
         tl.fromTo(glow, { opacity:0 }, { opacity:1, ease:'none', duration:.4 }, .3);
