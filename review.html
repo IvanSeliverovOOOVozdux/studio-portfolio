@@ -98,7 +98,8 @@
      Отрицательные margin гасят паддинги (место под тени и подъём плиток) и лишний gap, пока блок свёрнут. */
   .emo-wrap{ display:grid; grid-template-rows:0fr; margin:-22px -4px -6px; transition:grid-template-rows .42s cubic-bezier(.2,.8,.2,1), margin-top .42s cubic-bezier(.2,.8,.2,1); }
   .emo-wrap[data-state="opening"], .emo-wrap[data-state="open"]{ grid-template-rows:1fr; margin-top:-6px; }
-  .emo-wrap[data-state="closing"]{ transition-duration:.5s; transition-delay:.06s; transition-timing-function:cubic-bezier(.4,0,.2,1); }
+  /* блок схлопывается, только когда плитки уже ушли: их уход виден целиком, с последней до первой (--n = число плиток) */
+  .emo-wrap[data-state="closing"]{ transition-duration:.42s; transition-delay:calc((var(--n, 24) - 1) * 16ms + 240ms); transition-timing-function:cubic-bezier(.4,0,.2,1); }
   .emo-clip{ min-height:0; overflow:hidden; padding:6px 4px; }
   .emo-wrap[data-state="closed"] .emo-clip{ visibility:hidden; }
   .emojis{ display:grid; grid-template-columns:repeat(auto-fill, minmax(46px, 1fr)); gap:6px; margin-left:-2px; margin-right:-2px; }
@@ -106,7 +107,7 @@
   /* появление: плитки по очереди (--i = номер плитки), мягкое всплытие; уход: в обратном порядке, с последней до первой (--n = всего плиток).
      Анимация стоит только на время смены (opening/closing), поэтому в обычном состоянии работает :hover */
   .emo-wrap[data-state="opening"] .emojis button{ animation:emojiIn .34s cubic-bezier(.2,.9,.3,1.15) backwards; animation-delay:calc(var(--i, 0) * 16ms); }
-  .emo-wrap[data-state="closing"] .emojis button{ animation:emojiOut .24s cubic-bezier(.5,0,.8,.4) both; animation-delay:calc((var(--n, 24) - 1 - var(--i, 0)) * 14ms); }
+  .emo-wrap[data-state="closing"] .emojis button{ animation:emojiOut .34s cubic-bezier(.5,0,.8,.4) both; animation-delay:calc((var(--n, 24) - 1 - var(--i, 0)) * 16ms); }
   @keyframes emojiIn{ from{ opacity:0; transform:translateY(10px) scale(.6); } to{ opacity:1; transform:none; } }
   @keyframes emojiOut{ from{ opacity:1; transform:none; } to{ opacity:0; transform:translateY(10px) scale(.6); } }
   .avpick.busy .seg button:not([aria-checked="true"]){ cursor:progress; opacity:.6; }       /* пока идёт анимация, переключатель на время недоступен */
@@ -239,7 +240,7 @@
           '<div class="seg" role="radiogroup" aria-label="Что показывать в аватарке">' +
             '<button type="button" role="radio" data-mode="letters" aria-checked="true">Буквы имени</button>' +
             '<button type="button" role="radio" data-mode="emoji" aria-checked="false">Смайлик</button></div>' +
-          '<div class="emo-wrap" id="emoWrap" data-state="closed" inert><div class="emo-clip"><div class="emojis" id="emojis" role="radiogroup" aria-label="Смайлик" style="--n:' + AV.emojis.length + '">' +
+          '<div class="emo-wrap" id="emoWrap" data-state="closed" style="--n:' + AV.emojis.length + '" inert><div class="emo-clip"><div class="emojis" id="emojis" role="radiogroup" aria-label="Смайлик">' +
             AV.emojis.map(function(e, i){ return '<button type="button" role="radio" aria-checked="false" style="--i:' + i + '" data-emoji="' + esc(e) + '" aria-label="Смайлик ' + esc(e) + '">' + esc(e) + '</button>'; }).join('') + '</div></div></div>' +
           '<div><div class="sublbl">Цвет</div><div class="colors" role="radiogroup" aria-label="Цвет аватарки">' +
             AV.colors.map(function(c){ return '<button type="button" role="radio" aria-checked="false" data-color="' + esc(c.c) + '" style="--c:' + esc(c.c) + '" aria-label="' + esc(c.n) + '" title="' + esc(c.n) + '"></button>'; }).join('') + '</div></div>' +
@@ -283,7 +284,7 @@
        Пока идёт смена (плитки появляются или уходят), переключатель «Буквы имени / Смайлик» не реагирует: нельзя быстро нажать «Смайлик», пока смайлики не пропали. */
     var emoWrap = document.getElementById('emoWrap'), N = AV.emojis.length, emoTimer = 0, modeLocked = false;
     var REDUCE = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    var OPEN_MS = REDUCE ? 0 : (N - 1) * 16 + 340 + 60, CLOSE_MS = REDUCE ? 0 : Math.max(580, (N - 1) * 14 + 240 + 80);
+    var OPEN_MS = REDUCE ? 0 : (N - 1) * 16 + 340 + 60, CLOSE_MS = REDUCE ? 0 : (N - 1) * 16 + 240 + 420 + 40;
     function setEmo(state){ emoWrap.dataset.state = state; emoWrap.inert = (state === 'closed' || state === 'closing'); }
     function lockMode(on){ modeLocked = on; avpick.classList.toggle('busy', on); }
     function openEmo(){ lockMode(true); setEmo('opening'); clearTimeout(emoTimer); emoTimer = setTimeout(function(){ setEmo('open'); lockMode(false); }, OPEN_MS); }
