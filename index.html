@@ -299,9 +299,6 @@
     font-family:"Hanken Grotesk", system-ui, sans-serif; font-weight:500; font-size:clamp(15px,2.4vw,20px);
     letter-spacing:.42em; padding-left:.42em; text-transform:uppercase; line-height:1; position:relative;
   }
-  .back-sub{
-    font-family:"JetBrains Mono"; font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:rgba(244,233,216,.5);
-  }
   /* подпись на карточке */
   .card-cap{
     position:absolute; left:0; right:0; bottom:0; z-index:2;
@@ -742,6 +739,17 @@
       mnav.addEventListener('click', function(e){ if (e.target.closest('a')) setMenu(false, false); });
       document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && menuOpen) setMenu(false, true); });
       matchMedia('(min-width:961px)').addEventListener('change', function(e){ if (e.matches) setMenu(false, false); });
+      // прыжок по якорю (меню, кнопки, логотип): сцены со скрабом не должны проигрываться задом наперёд — сразу встают в нужное состояние
+      function settleScenes(){
+        if (!window.ScrollTrigger) return;
+        ScrollTrigger.update();
+        ScrollTrigger.getAll().forEach(function(st){ var tw = st.getTween && st.getTween(); if (tw) tw.progress(1); });
+      }
+      document.addEventListener('click', function(e){
+        var a = e.target.closest && e.target.closest('a[href^="#"]'); if (!a) return;
+        requestAnimationFrame(function(){ requestAnimationFrame(settleScenes); });
+        setTimeout(settleScenes, 150);
+      });
       update();
     })();
   </script>
@@ -780,7 +788,7 @@
           '<div class="card-wrap">'+
             '<div class="card-scale"><div class="card-tilt"><div class="card-3d">'+
               '<div class="face front"><span class="badge">'+c.badge+'</span><img src="assets/cases/'+c.img+'" alt="'+c.name+' — главный экран"><div class="card-cap"><b>'+c.name+'</b><span>'+c.niche+'</span></div></div>'+
-              '<div class="face back"><div class="back-inner"><img class="back-logo" src="assets/logo/airium-mark-light.png" alt="" width="96" height="96"><span class="back-mark">Airium</span><span class="back-sub">проектируем · кодим · запускаем</span></div></div>'+
+              '<div class="face back"><div class="back-inner"><img class="back-logo" src="assets/logo/airium-mark-light.png" alt="" width="96" height="96"><span class="back-mark">Airium</span></div></div>'+
             '</div></div></div>'+
             '<div class="go-plate"><a href="'+c.url+'" target="_blank" rel="noopener"><span class="go-label">Перейти на сайт</span></a></div>'+
           '</div>'+
