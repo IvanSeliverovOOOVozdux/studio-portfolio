@@ -260,7 +260,7 @@
     position:absolute; top:54px; left:50%; transform:translateX(-50%); z-index:3;
     width:50px; height:2px; border-radius:2px; background:var(--garnet); opacity:.65;
   }
-  /* подсказка «крутите вниз»: одна на весь блок работ, прикреплена к низу экрана. Появляется, как только снизу показался первый кейс
+  /* подсказка «крутите вниз»: одна на весь блок работ, прикреплена к низу экрана. Видна с самого начала сайта
      (и при переходе по меню на «Работы» — там человек попадает на пустой фон), гаснет, когда начинает вылетать карточка; на остальных кейсах её нет */
   .scroll-hint{
     position:fixed; left:0; right:0; bottom:calc(28px + env(safe-area-inset-bottom)); z-index:40; width:max-content; margin:0 auto; pointer-events:none;
@@ -1088,7 +1088,7 @@
 
     gsap.utils.toArray('.scene').forEach(setupScene);
 
-    /* подсказка «крутите вниз» — только у первого кейса: видна, пока его сцена показалась снизу экрана и карточка ещё не начала вылетать */
+    /* подсказка «крутите вниз»: видна с самого начала сайта и до первого кейса, гаснет, когда его карточка начинает вылетать */
     (function(){
       const hint = document.getElementById('scrollHint'), first = document.querySelector('.scene-track');
       if (!hint || !first || reduce) return;
@@ -1096,7 +1096,7 @@
       function check(){
         raf = 0;
         const top = first.getBoundingClientRect().top, h = window.innerHeight;
-        hint.classList.toggle('on', top < h - 110 && top > -Math.min(160, h * .15));
+        hint.classList.toggle('on', top > -Math.min(160, h * .15));
       }
       const req = function(){ if (!raf) raf = requestAnimationFrame(check); };
       window.addEventListener('scroll', req, { passive:true });
