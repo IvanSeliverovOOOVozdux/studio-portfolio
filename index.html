@@ -118,15 +118,19 @@
     clip-path:inset(0 0 100% 0); visibility:hidden; transition:clip-path .55s cubic-bezier(.7,0,.2,1), visibility 0s .55s;
   }
   .menu-open .mnav{ clip-path:inset(0); visibility:visible; transition:clip-path .55s cubic-bezier(.7,0,.2,1), visibility 0s; }
+  /* пункты: цифра и слово стоят по одной оси (по центру), размер слова умеренный — цифры не теряются рядом с ним */
   .mnav a.ml{
-    display:flex; align-items:baseline; gap:16px; min-height:64px; padding:12px 0; border-bottom:1px solid var(--line); text-decoration:none; color:var(--ink);
-    font-family:"Bricolage Grotesque", system-ui, sans-serif; font-weight:800; font-size:clamp(30px,8.4vw,52px); line-height:1.1; text-transform:uppercase;
+    --ml-fs:clamp(22px,6.2vw,30px);
+    display:grid; grid-template-columns:30px minmax(0,1fr); align-items:baseline; align-content:center; column-gap:6px; min-height:58px; padding:4px 0; border-bottom:1px solid var(--line); text-decoration:none; color:var(--ink);
+    font-family:"Bricolage Grotesque", system-ui, sans-serif; font-weight:700; font-size:var(--ml-fs); line-height:1.1; letter-spacing:.01em; text-transform:uppercase;
     opacity:0; transform:translateY(18px); transition:opacity .35s, transform .5s cubic-bezier(.2,.8,.2,1), color .25s;
   }
   .mnav{ counter-reset:ml; }
   .mnav a.ml[hidden]{ display:none; }
   .mnav a.ml{ counter-increment:ml; }
-  .mnav a.ml::before{ content:counter(ml, decimal-leading-zero); font-family:"JetBrains Mono"; font-weight:400; font-size:12px; letter-spacing:.12em; color:var(--garnet); }
+  /* цифра стоит на одной базовой линии со словом и приподнята ровно на разницу высот заглавных, то есть её середина = середина заглавных букв слова
+     (высота заглавных ≈ 0,7 em у любого шрифта слова: 0,35·кегль слова − 4,4 px = половина высоты цифры 12 px) */
+  .mnav a.ml::before{ content:counter(ml, decimal-leading-zero); font-family:"JetBrains Mono"; font-weight:400; font-size:12px; line-height:1; letter-spacing:.06em; color:var(--garnet); transform:translateY(calc(var(--ml-fs) * -.35 + 4.4px)); }
   .mnav a.ml[aria-current="location"]{ color:var(--garnet); }
   .menu-open .mnav a.ml{ opacity:1; transform:none; transition-delay:calc(.14s + var(--i, 0) * 55ms); }
   .mnav .mcta{ margin-top:28px; justify-content:center; padding:18px 24px; font-size:16px; opacity:0; transform:translateY(18px); transition:opacity .35s, transform .5s cubic-bezier(.2,.8,.2,1), box-shadow .3s, background .3s; }
@@ -143,7 +147,7 @@
 
   /* ---------- HERO (контур + барабан ниши) ---------- */
   .hero{
-    position:relative; min-height:100dvh; display:flex; flex-direction:column;
+    position:relative; min-height:100vh; min-height:100svh; display:flex; flex-direction:column;   /* svh: высота не прыгает, когда на телефоне прячется адресная строка (иначе сдвигаются точки старта сцен) */
     /* сверху резервируем высоту шапки (она лежит поверх hero), чтобы контент не заезжал под неё на низких экранах */
     padding:calc(var(--head-h) + clamp(12px,3vh,36px)) clamp(20px,5vw,64px) clamp(26px,5vh,52px);
     background:
@@ -163,7 +167,7 @@
   .hero .kick{ font-family:"JetBrains Mono"; font-size:12px; letter-spacing:.24em; text-transform:uppercase; color:var(--garnet); margin-bottom:42px; }
   .hero h1{ font-family:"Bricolage Grotesque", system-ui, "Segoe UI", sans-serif; font-weight:800; font-size:clamp(44px,min(9.9vw,19vh),170px); line-height:1.04; letter-spacing:.005em; text-transform:uppercase; margin-left:-.045em; }
   .hero h1 .o{ color:transparent; -webkit-text-stroke:2px var(--ink); letter-spacing:.02em; transition:color .4s,-webkit-text-stroke .4s; cursor:default; }
-  .hero h1 .o:hover{ color:var(--garnet); -webkit-text-stroke:2px var(--garnet); }
+  @media(hover:hover){ .hero h1 .o:hover{ color:var(--garnet); -webkit-text-stroke:2px var(--garnet); } }
   .hero .roll{ display:block; position:relative; height:1.18em; margin-top:.1em; overflow:visible; clip-path:inset(9% -100% 0 0); }
   .hero .roll .r{ position:absolute; left:0; bottom:0; white-space:nowrap; line-height:1; color:var(--garnet);
     transform:translateY(125%); opacity:0; will-change:transform,opacity;
@@ -189,13 +193,27 @@
   .hero .tg-link:hover{ opacity:1; transform:translateY(-2px); }
   .hero .tg-link svg{ width:22px; height:22px; }
   .hero .tg-link b{ font-weight:600; }
+  @media(max-width:900px){                       /* планшет: плашка и ссылка уменьшены, чтобы стоять в одну линию */
+    .hero .av{ font-size:14px; white-space:nowrap; }
+    .hero .tg-link{ font-size:14px; }
+  }
   @media(max-width:680px){
-    .hero .foot{ flex-direction:column; align-items:flex-start; gap:14px; }
-    .hero .av, .hero .tg-link{ font-size:13px; }
+    .hero .foot{ flex-direction:column; align-items:flex-start; gap:6px; }
+    .hero .av{ font-size:clamp(10.5px,3.3vw,12px); letter-spacing:0; padding:10px 14px; gap:10px; white-space:nowrap; }
+    .hero .tg-link{ font-size:13px; min-height:44px; }
+    .hero .tg-link svg{ width:20px; height:20px; }
+  }
+  /* телефон: строка-«кикер» в одну линию, заголовок и кнопка по ширине экрана */
+  @media(max-width:600px){
+    .hero .kick{ font-size:clamp(9px,2.7vw,11px); letter-spacing:.1em; white-space:nowrap; margin-bottom:24px; }
+    .hero h1{ font-size:clamp(38px,min(12.4vw,9vh),76px); }
+    .hero .sub{ font-size:16px; margin-top:22px; }
+    .hero .row{ margin-top:26px; }
+    .hero .row .btn{ width:100%; justify-content:center; min-height:54px; }
   }
 
   /* ---------- SHOWCASE SCENE ---------- */
-  .scene{ position:relative; height:100dvh; }
+  .scene{ position:relative; height:100vh; height:100lvh; }   /* lvh: самая большая высота экрана — закреплённая сцена не оставляет полосу снизу, когда на телефоне прячется адресная строка */
   .stage{
     position:absolute; inset:0; overflow:hidden;
     display:flex; align-items:center; justify-content:center;
@@ -270,6 +288,7 @@
     background:#fff;
     box-shadow:0 40px 80px -30px rgba(27,23,20,.5), 0 0 0 1px rgba(27,23,20,.06);
   }
+  .face picture{ display:contents; }
   .face img{ width:100%; height:100%; object-fit:cover; display:block; }
 
   /* задняя сторона — тёмная, брендовая */
@@ -409,14 +428,16 @@
   .rev-bub p{ font-size:15px; line-height:1.5; overflow-wrap:anywhere; }
   .rev-site{ position:relative; display:inline-flex; align-items:center; gap:9px; max-width:100%; margin-top:10px; padding:4px 5px 4px 13px; border-radius:999px; text-decoration:none; color:var(--garnet);
     border:1px solid color-mix(in srgb, var(--garnet) 42%, transparent); font-family:"JetBrains Mono"; font-size:12.5px; line-height:1; transition:background .25s, border-color .25s, transform .25s; }
-  .rev-site::after{ content:""; position:absolute; inset:-9px -4px; }
+  .rev-site::after{ content:""; position:absolute; inset:-10px -4px; }          /* зона нажатия ≥ 44 px при видимой высоте 34 px */
   .rev-site span{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .rev-site i{ flex:none; width:24px; height:24px; border-radius:50%; display:grid; place-items:center; background:color-mix(in srgb, var(--garnet) 16%, transparent); transition:background .25s, color .25s; }
   .rev-site i svg{ width:12px; height:12px; fill:none; stroke:currentColor; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round; }
-  .rev-site:hover{ background:color-mix(in srgb, var(--garnet) 11%, transparent); border-color:var(--garnet); }
-  .rev-site:hover i{ background:var(--garnet); color:#fff; }
-  .rev-site:hover span{ text-decoration:underline; text-underline-offset:3px; }
-  .rev-site:active{ transform:scale(.97); }
+  @media(hover:hover){
+    .rev-site:hover{ background:color-mix(in srgb, var(--garnet) 11%, transparent); border-color:var(--garnet); }
+    .rev-site:hover i{ background:var(--garnet); color:#fff; }
+    .rev-site:hover span{ text-decoration:underline; text-underline-offset:3px; }
+  }
+  .rev-site:active{ transform:scale(.97); background:color-mix(in srgb, var(--garnet) 11%, transparent); }
   .rev-meta{ display:flex; align-items:center; justify-content:space-between; gap:14px; margin-top:8px; }
   .rev-msg.out .rev-meta{ justify-content:flex-start; }
   .rev-stars{ display:inline-flex; gap:2px; }
@@ -443,8 +464,8 @@
   .rev-nav[hidden]{ display:none; }
   .rev-nav{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 16px; border-top:1px solid rgba(27,23,20,.1); }
   .rev-arrow{ flex:none; width:44px; height:44px; border-radius:50%; display:grid; place-items:center; border:1px solid rgba(27,23,20,.14); color:var(--ink); background:transparent; cursor:pointer; transition:background .25s, color .25s, border-color .25s, transform .25s; }
-  .rev-arrow:hover{ background:var(--ink); color:#fff; border-color:var(--ink); }
-  .rev-arrow:active{ transform:scale(.94); }
+  @media(hover:hover){ .rev-arrow:hover{ background:var(--ink); color:#fff; border-color:var(--ink); } }   /* на тач-экране :hover «залипает» после касания — там обратная связь только на время нажатия */
+  .rev-arrow:active{ background:var(--ink); color:#fff; border-color:var(--ink); transform:scale(.94); }
   .rev-arrow svg{ width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
   .rev-count{ font-family:"JetBrains Mono"; font-size:14px; letter-spacing:.16em; color:var(--ink-2); font-variant-numeric:tabular-nums; }
   .rev-count b{ color:var(--ink); font-weight:500; }
@@ -485,6 +506,47 @@
 
   @media(prefers-reduced-motion:reduce){
     .dot{ animation:none; }
+  }
+
+  /* ---------- ТЕЛЕФОН ---------- */
+  html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }            /* iOS не раздувает шрифты при повороте экрана */
+  a, button{ -webkit-tap-highlight-color:rgba(158,43,69,.14); }            /* фирменный цвет вместо серой вспышки при касании */
+  @media(hover:none){
+    .rev-body{ overscroll-behavior:auto; }                                 /* прокрутка чата не «запирает» страницу под пальцем */
+  }
+  @media(max-width:600px){
+    .sec{ padding:64px 0; }
+    .sec-kick{ margin-bottom:16px; }
+    /* «как мы работаем»: номер слева, текст справа — список вдвое компактнее */
+    .steps{ margin-top:28px; gap:0; }
+    .step{ display:grid; grid-template-columns:38px minmax(0,1fr); column-gap:8px; padding:18px 0 20px; }
+    .step .n{ grid-row:1 / span 2; padding-top:5px; }
+    .step h3{ margin:0 0 6px; font-size:20px; }
+    /* отзывы */
+    .rev-grid{ gap:26px; }
+    .rev-lead{ font-size:16px; margin-top:16px; }
+    .rev-chat{ border-radius:24px; }
+    .rev-body{ padding:18px 20px 30px; height:min(470px,68vh); height:min(470px,68dvh); min-height:0; max-height:none; }   /* фиксированная высота: страница не сдвигается между отзывами (vh — запасной вариант для старых телефонов без dvh) */
+    .rev-msg{ max-width:94%; }
+    .rev-head{ padding:12px 16px; }
+    /* прайс */
+    .plans{ margin-top:28px; gap:14px; }
+    .plan{ padding:26px 22px; border-radius:20px; }
+    .plan .pp{ font-size:clamp(32px,9.4vw,40px); }
+    .pbtn{ align-self:stretch; justify-content:center; min-height:48px; }
+    .price-note{ font-size:12.5px; line-height:1.55; }
+    /* контакты и подвал */
+    .contact{ padding-block:56px calc(40px + env(safe-area-inset-bottom)); }
+    .contact-row{ flex-direction:column; align-items:stretch; gap:16px; }
+    .btn-big{ justify-content:center; padding:18px 20px; font-size:13px; }
+    .contact .hours{ justify-content:center; font-size:12.5px; }
+    .foot-bar{ flex-direction:column; align-items:flex-start; gap:4px; margin-top:36px; }
+    .foot-bar > *{ min-height:36px; display:inline-flex; align-items:center; }
+    .foot-bar a{ min-height:44px; }
+    /* плашка «Перейти на сайт» и подпись кейса — под палец и под узкий экран */
+    .go-plate a{ min-height:50px; padding:16px 26px; }
+    .scene-label{ font-size:11px; letter-spacing:.16em; }
+    .card-cap{ padding:12px 14px; }
   }
 </style>
 </head>
@@ -652,6 +714,17 @@
       var reduceH = matchMedia('(prefers-reduced-motion: reduce)').matches;
       var mouseH  = matchMedia('(hover:hover) and (pointer:fine)').matches;
       var roll = document.getElementById('rollNiche');
+      /* бегущее слово («мастер-классов.» и т.п.) подгоняется по ширине экрана: длинные слова уменьшаются ровно настолько, чтобы влезть; короткие остаются крупными */
+      function fitRoll(){
+        if (!roll) return;
+        var rs = [].slice.call(roll.querySelectorAll('.r')), avail = roll.clientWidth;
+        if (!avail) return;
+        rs.forEach(function(r){ r.style.fontSize = ''; });
+        rs.forEach(function(r){ var w = r.offsetWidth; if (w > avail) r.style.fontSize = (Math.floor(avail / w * 1000) / 10 - .5) + '%'; });
+      }
+      fitRoll();
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitRoll);
+      var fitT = 0; window.addEventListener('resize', function(){ clearTimeout(fitT); fitT = setTimeout(fitRoll, 120); });
       if (roll && !reduceH){
         var words = [].slice.call(roll.querySelectorAll('.r')), i = 0;
         setInterval(function(){
@@ -764,10 +837,13 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
   <script>
     gsap.registerPlugin(ScrollTrigger);
+    /* телефон: показ/скрытие адресной строки меняет только высоту окна — на это не пересчитываем закреплённые сцены (иначе они «прыгают») */
+    ScrollTrigger.config({ ignoreMobileResize: true });
 
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const vh = () => window.innerHeight;
     const mouse = matchMedia('(hover:hover) and (pointer:fine)').matches;
+    const coarse = matchMedia('(pointer:coarse)').matches;
 
     // ===== данные кейсов (порядок = цепочка фонов) =====
     const HERO_BG = '#ece2d0';
@@ -792,7 +868,7 @@
           '<div class="scene-bar"></div>'+
           '<div class="card-wrap">'+
             '<div class="card-scale"><div class="card-tilt"><div class="card-3d">'+
-              '<div class="face front"><span class="badge">'+c.badge+'</span><img src="assets/cases/'+c.img+'" alt="'+c.name+' — главный экран"><div class="card-cap"><b>'+c.name+'</b><span>'+c.niche+'</span></div></div>'+
+              '<div class="face front"><span class="badge">'+c.badge+'</span><picture><source type="image/webp" srcset="assets/cases/'+c.img.replace('.png','.webp')+'"><img src="assets/cases/'+c.img+'" width="1440" height="900" decoding="async" alt="'+c.name+' — главный экран"></picture><div class="card-cap"><b>'+c.name+'</b><span>'+c.niche+'</span></div></div>'+
               '<div class="face back"><div class="back-inner"><img class="back-logo" src="assets/logo/airium-mark-light.png" alt="" width="96" height="96"><span class="back-mark">Airium</span></div></div>'+
             '</div></div></div>'+
             '<div class="go-plate"><a href="'+c.url+'" target="_blank" rel="noopener"><span class="go-label">Перейти на сайт</span></a></div>'+
@@ -821,12 +897,17 @@
         text.split('').forEach(function(ch){ const it=document.createElement('i'); if(ch===' ') it.className='sp'; else it.textContent=ch; span.appendChild(it); });
       });
 
-      function platePos(){ const half = cardScale.offsetHeight*1.25/2; const ph = goPlate.offsetHeight||56; return { hidden:half-ph-4, shown:half+24 }; }
+      /* конечный размер карточки: на десктопе ×1.25, на телефоне — чтобы влезала в экран по ширине (94%) и по высоте (остаётся место под плашку «Перейти на сайт») */
+      function endScale(){
+        const w = cardScale.offsetWidth || 1, h = cardScale.offsetHeight || 1;
+        return Math.max(.4, Math.min(1.25, window.innerWidth * .94 / w, (window.innerHeight - 174) / h));   // 174 = плашка (51) + отступ до карточки (24) + поля сверху/снизу
+      }
+      function platePos(){ const half = cardScale.offsetHeight*endScale()/2; const ph = goPlate.offsetHeight||56; return { hidden:half-ph-4, shown:half+24 }; }
 
-      // 3D-наклон за курсором
+      // 3D-наклон за курсором (только мышь: на тач-экране карточку не дёргает)
       const TILT = 28;
       function resetTilt(){ cardTilt.style.transform = 'rotateX(0deg) rotateY(0deg)'; }
-      if (!reduce){
+      if (!reduce && mouse){
         hoverZone.addEventListener('pointermove', function(e){ const r=cardTilt.getBoundingClientRect();
           const px=(e.clientX-r.left)/r.width-0.5, py=(e.clientY-r.top)/r.height-0.5;
           cardTilt.style.transform = 'rotateX('+(-py*TILT).toFixed(2)+'deg) rotateY('+(px*TILT).toFixed(2)+'deg)'; });
@@ -842,23 +923,24 @@
 
       if (reduce){
         gsap.set(fill, { clipPath:'circle(150% at 50% 50%)' });
-        gsap.set(cardScale, { y:0, scale:1.2, autoAlpha:1 });
+        gsap.set(cardScale, { y:0, scale:Math.min(1.2, endScale()), autoAlpha:1 });
         gsap.set(card3d, { rotateX:0, rotateZ:0 });
         spans.forEach(function(el){ gsap.set(el, { opacity:parseFloat(el.dataset.o), visibility:'visible' }); });
         gsap.set(goPlate, { y:platePos().shown, autoAlpha:1 });
         return;
       }
 
-      const tl = gsap.timeline({ scrollTrigger:{ trigger:scene, start:'top top', end:'+=360%', scrub:0.8, pin:true, anticipatePin:1 }});
+      /* значения-функции + invalidateOnRefresh: при повороте телефона или смене размера окна сцена пересчитывается под новый экран;
+         на телефоне путь прокрутки на кейс короче (+=260% вместо +=360%): пять кейсов не превращаются в бесконечный свайп */
+      const tl = gsap.timeline({ scrollTrigger:{ trigger:scene, start:'top top', end:function(){ return (coarse || window.innerWidth < 700) ? '+=260%' : '+=360%'; }, scrub:0.8, pin:true, anticipatePin:1, invalidateOnRefresh:true }});
       tl.fromTo(cardScale, { autoAlpha:0 }, { autoAlpha:1, ease:'power1.out', duration:.08 }, 0);
-      tl.fromTo(cardScale, { y:-vh()*0.34, scale:.09 }, { y:0, scale:1.25, ease:'power2.out', duration:1 }, 0);
+      tl.fromTo(cardScale, { y:function(){ return -vh()*0.34; }, scale:.09 }, { y:0, scale:endScale, ease:'power2.out', duration:1 }, 0);
       tl.fromTo(card3d, { rotateX:0, rotateZ:0 }, { rotateX:2520, rotateZ:720, ease:'power2.out', duration:1 }, 0);
       spans.forEach(function(el,i){ const o=parseFloat(el.dataset.o); const order=spans.length-1-i;
         tl.fromTo(el, { opacity:0, visibility:'hidden', yPercent:70 }, { opacity:o, visibility:'visible', yPercent:0, ease:'power2.out', duration:.32 }, order*0.07); });
       tl.fromTo(fill, { clipPath:'circle(0% at 50% 50%)' }, { clipPath:'circle(150% at 50% 50%)', ease:'power2.inOut', duration:.67 }, .15);
       tl.to([label, bar], { opacity:0, duration:.2, ease:'none' }, .3);
-      const pp = platePos();
-      tl.fromTo(goPlate, { y:pp.hidden, autoAlpha:0 }, { y:pp.shown, autoAlpha:1, ease:'power3.out', duration:.14 }, .86);
+      tl.fromTo(goPlate, { y:function(){ return platePos().hidden; }, autoAlpha:0 }, { y:function(){ return platePos().shown; }, autoAlpha:1, ease:'power3.out', duration:.14 }, .86);
       tl.to(goPlate, { autoAlpha:1, duration:.2 });   // холд-буфер
     }
 
