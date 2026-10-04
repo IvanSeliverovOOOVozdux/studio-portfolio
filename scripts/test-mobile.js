@@ -92,6 +92,13 @@ const LANDSCAPE = [[667, 375], [844, 390]];
   const tr = await triggers();
   ok('телефон: путь прокрутки на кейс короче (≈ 260% высоты экрана)', Math.abs((tr[0].e - tr[0].s) / 844 - 2.6) < .05, tr[0]);
   ok('картинки кейсов — WebP (лёгкие), размеры заданы', await p.evaluate(() => Array.from(document.querySelectorAll('.face.front img')).every(i => /\.webp$/.test(i.currentSrc) && i.naturalWidth === 1440 && i.getAttribute('width') === '1440')));
+  ok('кириллица в заголовках — веб-шрифт Onest (чистый контур, одинаков на iPhone/Android/ПК), а не системный', await p.evaluate(() => document.fonts.check('800 20px Onest', 'САЙТЫ') && /Onest/.test(getComputedStyle(document.querySelector('.hero h1')).fontFamily)));
+  const lt = await p.evaluate(() => ({ lite: document.documentElement.classList.contains('lite'), pos: getComputedStyle(document.querySelector('.scene')).position, pins: document.querySelectorAll('.pin-spacer').length,
+    grain: getComputedStyle(document.querySelector('.grain')).display, blend: getComputedStyle(document.querySelector('.case-title')).mixBlendMode, clip: getComputedStyle(document.querySelector('.scene .fill')).clipPath, blur: getComputedStyle(document.querySelector('.site-head')).backdropFilter }));
+  ok('телефон: «лёгкий режим» — сцена липкая (sticky) без JS-закрепления, нет зерна, смешивания цветов, clip-path и размытия под шапкой', lt.lite && lt.pos === 'sticky' && lt.pins === 0 && lt.grain === 'none' && lt.blend === 'normal' && lt.clip === 'none' && /none/.test(lt.blur), lt);
+  await scrollTo(tr[1].e - 3);
+  ok('телефон: к концу кейса диск-заливка закрыл экран, буквы заголовка перекрасились под новый фон (контраст сохранён)', await p.evaluate(() => { const sc = document.querySelectorAll('.scene')[1], disc = sc.querySelector('.disc'), l = sc.querySelector('.case-title i:not(.sp)'); const m = new DOMMatrixReadOnly(getComputedStyle(disc).transform); return Math.abs(m.a - 1) < .02 && getComputedStyle(l).color === 'rgb(241, 243, 242)'; }));
+  await scrollTo(0, 700);
   ok('телефон: у карточки нет 3D-наклона от касаний (только мышь)', await p.evaluate(() => matchMedia('(hover:hover) and (pointer:fine)').matches === false));
 
   // меню: размер слов умеренный, цифра на одной оси со словом

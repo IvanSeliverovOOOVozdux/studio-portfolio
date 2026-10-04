@@ -100,7 +100,7 @@ const ok = (n, c, x) => { if (!c) fails++; console.log((c ? 'OK   ' : 'FAIL ') +
   const hMid = await emoH();
   ok('после ухода плиток блок начинает схлопываться: ещё не закрыт, но ниже полной высоты', hMid > 0 && hMid < hOpen, { hMid, hOpen });
   await p.click('[data-mode="emoji"]'); await sleep(40);
-  ok('и ближе к концу сворачивания «Смайлик» всё ещё не нажимается', await emoState() === 'closing');
+  ok('и ближе к концу сворачивания «Смайлик» всё ещё не нажимается', ['closing', 'closed'].includes(await emoState()) && await p.$eval('#avpick', e => e.classList.contains('busy')) && (await prev()).emoji === false);   // блок уже схлопнулся, но нижняя часть ещё едет на место — переключатель занят
   await sleep(900);
   ok('после сворачивания блок закрыт, нижняя часть вернулась вверх на место', await emoState() === 'closed' && await segGap() === 16 && Math.abs(await colorsTop() - topClosed) <= 1 && await p.$eval('#emoWrap', e => e.inert));
   ok('после закрытия «Смайлик» снова доступен, ожидание снято', await p.$eval('#avpick', e => !e.classList.contains('busy')));

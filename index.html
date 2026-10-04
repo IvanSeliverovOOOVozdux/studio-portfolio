@@ -8,15 +8,24 @@
 <meta property="og:title" content="Airium — веб-студия" />
 <meta property="og:description" content="Лендинги и сайты-визитки под ключ: дизайн, код и запуск за 3–5 дней." />
 <meta name="theme-color" content="#ece2d0" />
+<script>try{ if (matchMedia("(pointer:coarse)").matches || innerWidth < 700) document.documentElement.classList.add("lite"); }catch(e){}</script>
 <link rel="icon" type="image/png" sizes="64x64" href="assets/logo/favicon-64.png" />
 <link rel="icon" type="image/png" sizes="512x512" href="assets/logo/favicon-512.png" />
 <link rel="apple-touch-icon" href="assets/logo/apple-touch-icon.png" />
 
 <!-- Fonts -->
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-
+<!-- Шрифты лежат у нас (assets/fonts): не зависят от доступности Google Fonts, нет блокирующего запроса, кириллица всегда рисуется Onest (а не системным шрифтом) -->
+<link rel="preload" href="assets/fonts/onest-cyrillic-var.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="preload" href="assets/fonts/bricolage-grotesque-latin-var.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="preload" href="assets/fonts/jetbrains-mono-cyrillic-var.woff2" as="font" type="font/woff2" crossorigin />
+<style>
+  @font-face{ font-family:'Bricolage Grotesque'; font-style:normal; font-weight:400 800; font-display:swap; src:url(assets/fonts/bricolage-grotesque-latin-var.woff2) format('woff2'); unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+  @font-face{ font-family:'Hanken Grotesk'; font-style:normal; font-weight:400 600; font-display:swap; src:url(assets/fonts/hanken-grotesk-latin-var.woff2) format('woff2'); unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+  @font-face{ font-family:'JetBrains Mono'; font-style:normal; font-weight:400 500; font-display:swap; src:url(assets/fonts/jetbrains-mono-cyrillic-var.woff2) format('woff2'); unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116; }
+  @font-face{ font-family:'JetBrains Mono'; font-style:normal; font-weight:400 500; font-display:swap; src:url(assets/fonts/jetbrains-mono-latin-var.woff2) format('woff2'); unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+  @font-face{ font-family:'Onest'; font-style:normal; font-weight:600 800; font-display:swap; src:url(assets/fonts/onest-cyrillic-var.woff2) format('woff2'); unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116; }
+  @font-face{ font-family:'Onest'; font-style:normal; font-weight:600 800; font-display:swap; src:url(assets/fonts/onest-latin-var.woff2) format('woff2'); unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+</style>
 <style>
   :root{
     /* chain link colours */
@@ -122,7 +131,7 @@
   .mnav a.ml{
     --ml-fs:clamp(22px,6.2vw,30px);
     display:grid; grid-template-columns:30px minmax(0,1fr); align-items:baseline; align-content:center; column-gap:6px; min-height:58px; padding:4px 0; border-bottom:1px solid var(--line); text-decoration:none; color:var(--ink);
-    font-family:"Bricolage Grotesque", system-ui, sans-serif; font-weight:700; font-size:var(--ml-fs); line-height:1.1; letter-spacing:.01em; text-transform:uppercase;
+    font-family:"Bricolage Grotesque", "Onest", system-ui, sans-serif; font-weight:700; font-size:var(--ml-fs); line-height:1.1; letter-spacing:.01em; text-transform:uppercase;
     opacity:0; transform:translateY(18px); transition:opacity .35s, transform .5s cubic-bezier(.2,.8,.2,1), color .25s;
   }
   .mnav{ counter-reset:ml; }
@@ -165,7 +174,7 @@
     background:linear-gradient(160deg, var(--hero-bg-2), #dccaa9); opacity:.5; }
   @media(max-width:1100px){ .hero-accent{ display:none; } }
   .hero .kick{ font-family:"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace; font-size:12px; letter-spacing:.24em; text-transform:uppercase; color:var(--garnet); margin-bottom:42px; }
-  .hero h1{ font-family:"Bricolage Grotesque", system-ui, "Segoe UI", sans-serif; font-weight:800; font-size:clamp(44px,min(9.9vw,19vh),170px); line-height:1.04; letter-spacing:.005em; text-transform:uppercase; margin-left:-.045em; }
+  .hero h1{ font-family:"Bricolage Grotesque", "Onest", system-ui, sans-serif; font-weight:800; font-size:clamp(44px,min(9.9vw,19vh),170px); line-height:1.04; letter-spacing:.005em; text-transform:uppercase; margin-left:-.045em; }
   .hero h1 .o{ color:transparent; -webkit-text-stroke:2px var(--ink); letter-spacing:.02em; transition:color .4s,-webkit-text-stroke .4s; cursor:default; }
   @media(hover:hover){ .hero h1 .o:hover{ color:var(--garnet); -webkit-text-stroke:2px var(--garnet); } }
   .hero .roll{ display:block; position:relative; height:1.18em; margin-top:.1em; overflow:visible; clip-path:inset(9% -100% 0 0); }
@@ -213,7 +222,11 @@
   }
 
   /* ---------- SHOWCASE SCENE ---------- */
-  .scene{ position:relative; height:100vh; height:100lvh; }   /* lvh: самая большая высота экрана — закреплённая сцена не оставляет полосу снизу, когда на телефоне прячется адресная строка */
+  /* Закрепление сцены — нативный position:sticky внутри «трека» (раньше JS-закрепление ScrollTrigger: на iPhone оно дёргалось и лагало).
+     Высота трека = высота экрана + путь прокрутки: на компьютере 360%, на телефоне 260% */
+  .scene-track{ position:relative; height:460vh; height:calc(100lvh * 4.6); }
+  .lite .scene-track{ height:360vh; height:calc(100lvh * 3.6); }
+  .scene{ position:sticky; top:0; height:100vh; height:100lvh; }   /* lvh: самая большая высота экрана — закреплённая сцена не оставляет полосу снизу, когда на телефоне прячется адресная строка */
   .stage{
     position:absolute; inset:0; overflow:hidden;
     display:flex; align-items:center; justify-content:center;
@@ -246,7 +259,7 @@
     position:absolute; inset:0; z-index:2; pointer-events:none; overflow:hidden;
     display:flex; flex-direction:column; align-items:stretch; justify-content:space-between;
     padding:4vh 0;
-    font-family:"Bricolage Grotesque", system-ui, "Segoe UI", sans-serif; font-weight:800; text-transform:uppercase;
+    font-family:"Bricolage Grotesque", "Onest", system-ui, sans-serif; font-weight:800; text-transform:uppercase;
     line-height:.9; color:#fff; mix-blend-mode:difference;   /* авто-контраст к фону под буквами */
   }
   /* строка = флекс-ряд букв, распределённых по ширине до краёв-лимитов */
@@ -325,7 +338,7 @@
     padding:14px 18px;
     color:var(--stext, var(--ink));   /* цвет под тему кейса (тёмный/кремовый) */
   }
-  .card-cap b{ font-family:"Bricolage Grotesque", system-ui, "Segoe UI", sans-serif; font-weight:600; font-size:15px; }
+  .card-cap b{ font-family:"Bricolage Grotesque", "Onest", system-ui, sans-serif; font-weight:600; font-size:15px; }
   .card-cap span{ font-family:"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace; font-size:11px; letter-spacing:.08em; opacity:.7; }
   /* на тёмных кейсах — тень для читаемости нижней подписи */
   .scene-dark .card-cap b, .scene-dark .card-cap span{ text-shadow:0 1px 12px rgba(0,0,0,.6); }
@@ -380,7 +393,7 @@
   .wrapx{ max-width:1180px; margin:0 auto; padding:0 clamp(20px,5vw,64px); }
   .sec{ position:relative; background:var(--hero-bg); padding:clamp(70px,12vh,140px) 0; }
   .sec-kick{ font-family:"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace; font-size:12px; letter-spacing:.22em; text-transform:uppercase; color:var(--garnet); margin-bottom:22px; }
-  .sec h2{ font-family:"Bricolage Grotesque", system-ui, "Segoe UI", sans-serif; font-weight:800; font-size:clamp(34px,5.5vw,72px); line-height:.98; letter-spacing:-.03em; max-width:16ch; }
+  .sec h2{ font-family:"Bricolage Grotesque", "Onest", system-ui, sans-serif; font-weight:800; font-size:clamp(34px,5.5vw,72px); line-height:.98; letter-spacing:-.03em; max-width:16ch; }
   .sec h2 em{ font-style:normal; color:var(--garnet); }
 
   .rv{ opacity:0; transform:translateY(26px); transition:opacity .7s cubic-bezier(.16,1,.3,1), transform .7s cubic-bezier(.16,1,.3,1); }
@@ -391,7 +404,7 @@
   @media(max-width:520px){ .steps{ grid-template-columns:1fr; } }
   .step{ border-top:1px solid var(--line); padding-top:18px; }
   .step .n{ font-family:"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace; font-size:13px; color:var(--garnet); }
-  .step h3{ font-family:"Bricolage Grotesque", system-ui, "Segoe UI", sans-serif; font-weight:700; font-size:22px; margin:10px 0 8px; letter-spacing:-.02em; }
+  .step h3{ font-family:"Bricolage Grotesque", "Onest", system-ui, sans-serif; font-weight:700; font-size:22px; margin:10px 0 8px; letter-spacing:-.02em; }
   .step p{ color:var(--ink-2); font-size:14px; line-height:1.55; }
 
   /* ---------- ОТЗЫВЫ: окно переписки; данные и ответы студии приходят из /api/reviews ---------- */
@@ -404,7 +417,7 @@
   .rev-head{ display:flex; align-items:center; gap:12px; padding:14px 18px; border-bottom:1px solid rgba(27,23,20,.1); }
   .rev-head .logo{ width:42px; height:42px; border-radius:50%; background:var(--ink); display:grid; place-items:center; flex:none; }
   .rev-head .logo img{ width:24px; height:24px; object-fit:contain; }
-  .rev-head b{ display:block; font-family:"Bricolage Grotesque", system-ui, sans-serif; font-size:16px; }
+  .rev-head b{ display:block; font-family:"Bricolage Grotesque", "Onest", system-ui, sans-serif; font-size:16px; }
   .rev-head small{ font-size:12.5px; color:var(--ink-2); }
   .rev-body{
     display:flex; flex-direction:column; gap:12px; padding:22px 26px 34px; min-height:min(430px,64dvh); max-height:min(620px,76dvh); overflow-y:auto; overscroll-behavior:contain; scroll-behavior:smooth;
@@ -448,7 +461,7 @@
   /* аватарки поверх сообщений: клиента на левом нижнем углу, студии на правом нижнем */
   .rev-ava{
     position:absolute; bottom:-15px; z-index:2; width:36px; height:36px; border-radius:50%; display:grid; place-items:center; overflow:hidden;
-    font-family:"Bricolage Grotesque", system-ui, sans-serif; font-weight:700; font-size:13px; letter-spacing:.02em; color:#fff;
+    font-family:"Bricolage Grotesque", "Onest", system-ui, sans-serif; font-weight:700; font-size:13px; letter-spacing:.02em; color:#fff;
     background:var(--c, var(--garnet)); box-shadow:0 0 0 3px #fff, 0 8px 16px -8px rgba(0,0,0,.45);
   }
   .rev-msg.in .rev-ava{ left:-16px; }
@@ -477,7 +490,7 @@
   .plan{ background:#fff; border:1px solid var(--line); border-radius:22px; padding:34px; display:flex; flex-direction:column; gap:16px; }
   .plan.dark{ background:var(--ink); color:var(--hero-bg); border-color:transparent; }
   .plan .pt{ font-family:"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace; font-size:12px; letter-spacing:.12em; text-transform:uppercase; opacity:.7; }
-  .plan .pp{ font-family:"Bricolage Grotesque", system-ui, "Segoe UI", sans-serif; font-weight:800; font-size:clamp(34px,4vw,52px); letter-spacing:-.02em; }
+  .plan .pp{ font-family:"Bricolage Grotesque", "Onest", system-ui, sans-serif; font-weight:800; font-size:clamp(34px,4vw,52px); letter-spacing:-.02em; }
   .plan ul{ list-style:none; display:flex; flex-direction:column; gap:10px; }
   .plan li{ font-size:15px; display:flex; gap:10px; align-items:flex-start; line-height:1.4; }
   .plan li::before{ content:"—"; color:var(--garnet); }
@@ -506,7 +519,24 @@
 
   @media(prefers-reduced-motion:reduce){
     .dot{ animation:none; }
+    .scene-track{ height:auto !important; }
+    .scene{ position:relative; }
   }
+
+  /* ---------- ЛЁГКИЙ РЕЖИМ (телефон / тач-экран): то же самое, но без дорогих для видеокарты эффектов ---------- */
+  .fill .disc, .fill .glow{ display:none; }
+  .lite .grain{ display:none; }                                                       /* зерно: полноэкранный слой поверх всего */
+  .lite .site-head.solid{ background:rgba(236,226,208,.96); -webkit-backdrop-filter:none; backdrop-filter:none; }
+  .lite .case-title, .lite .scene-label{ mix-blend-mode:normal; }                     /* контраст букв считается заранее (--inv-*), а не смешиванием каждый кадр */
+  .lite .scene-label{ color:var(--inv-base); }
+  .lite .case-title{ color:var(--inv-base); }
+  .lite .face{ box-shadow:0 18px 32px -18px rgba(27,23,20,.5), 0 0 0 1px rgba(27,23,20,.06); }
+  .lite .fill{ clip-path:none; background:none; will-change:auto; }
+  /* круговая заливка: масштабируемый диск (transform идёт на видеокарте) вместо анимации clip-path (перерисовка каждый кадр) */
+  .lite .fill .disc{ display:block; position:absolute; left:50%; top:50%; width:var(--disc,1000px); height:var(--disc,1000px); margin:calc(var(--disc,1000px) / -2) 0 0 calc(var(--disc,1000px) / -2);
+    border-radius:50%; background:var(--fill); transform:scale(0); will-change:transform; }
+  .lite .fill .glow{ display:block; position:absolute; inset:0; opacity:0; will-change:opacity;
+    background:radial-gradient(60% 50% at 50% 42%, var(--glow, #f0d3d8), transparent 70%); }
 
   /* ---------- ТЕЛЕФОН ---------- */
   html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }            /* iOS не раздувает шрифты при повороте экрана */
@@ -844,6 +874,7 @@
     const vh = () => window.innerHeight;
     const mouse = matchMedia('(hover:hover) and (pointer:fine)').matches;
     const coarse = matchMedia('(pointer:coarse)').matches;
+    const lite = document.documentElement.classList.contains('lite');     // телефон / тач-экран: «лёгкий» режим сцен (см. CSS)
 
     // ===== данные кейсов (порядок = цепочка фонов) =====
     const HERO_BG = '#ece2d0';
@@ -856,13 +887,15 @@
     ];
 
     // ===== генерация разметки сцен =====
+    /* цвет «поверх» фона для заголовка: 255 − канал (то, что давал mix-blend-mode:difference с белым) */
+    function inv(hex){ const n = parseInt(hex.slice(1), 16); return 'rgb(' + (255 - (n >> 16 & 255)) + ',' + (255 - (n >> 8 & 255)) + ',' + (255 - (n & 255)) + ')'; }
     function sceneHTML(c, i){
       const base = i === 0 ? HERO_BG : CASES[i-1].fill;
       const num = String(i+1).padStart(2,'0');
       const rows = [1,0.75,0.5,0.25].map(function(o){ return '<span data-o="'+o+'" style="--o:'+o+'">'+c.title+'</span>'; }).join('');
-      return '<section class="scene'+(c.dark?' scene-dark':'')+'" style="--base:'+base+';--fill:'+c.fill+';--glow:'+c.glow+';--stext:'+c.stext+'">'+
+      return '<div class="scene-track"><section class="scene'+(c.dark?' scene-dark':'')+'" style="--base:'+base+';--fill:'+c.fill+';--glow:'+c.glow+';--stext:'+c.stext+';--inv-base:'+inv(base)+';--inv-fill:'+inv(c.fill)+'">'+
         '<div class="stage">'+
-          '<div class="fill"></div>'+
+          '<div class="fill"><i class="disc"></i><i class="glow"></i></div>'+
           '<div class="case-title" aria-hidden="true">'+rows+'</div>'+
           '<div class="scene-label">Кейс '+num+' — '+c.name+'</div>'+
           '<div class="scene-bar"></div>'+
@@ -874,7 +907,7 @@
             '<div class="go-plate"><a href="'+c.url+'" target="_blank" rel="noopener"><span class="go-label">Перейти на сайт</span></a></div>'+
           '</div>'+
         '</div>'+
-      '</section>';
+      '</section></div>';
     }
     document.getElementById('scenes').innerHTML = CASES.map(sceneHTML).join('');
 
@@ -909,7 +942,33 @@
         const fit = fs * (avail * .985 - gaps) / letters;
         if (letters > 0 && fit < fs) spans.forEach(function(s){ s.style.fontSize = fit.toFixed(2) + 'px'; });
       }
-      fitTitle(); titleFitters.push(fitTitle);
+      /* лёгкий режим: размер диска-заливки и расстояние от каждой буквы заголовка до центра (когда диск до неё дорастёт, буква меняет цвет) */
+      const disc = scene.querySelector('.fill .disc'), glow = scene.querySelector('.fill .glow');
+      const track = scene.parentElement, letters = [];
+      function layoutLite(){
+        if (!lite) return;
+        const st = scene.querySelector('.stage').getBoundingClientRect(), cx = st.left + st.width / 2, cy = st.top + st.height / 2;
+        const D = 2 * Math.hypot(st.width / 2, st.height / 2) + 8;
+        scene.style.setProperty('--disc', D.toFixed(1) + 'px');
+        letters.length = 0;
+        spans.forEach(function(row){
+          const ty = (gsap.getProperty(row, 'y') || 0) + (gsap.getProperty(row, 'yPercent') || 0) * row.offsetHeight / 100;
+          Array.prototype.forEach.call(row.children, function(n){
+            if (n.classList.contains('sp')) return;
+            const r = n.getBoundingClientRect();
+            letters.push({ el:n, on:false, d:Math.hypot(r.left + r.width / 2 - cx, r.top + r.height / 2 - ty - cy) * 2 / D });   // доля радиуса диска, при которой диск закрывает букву
+          });
+        });
+      }
+      function flipLetters(s){                       // s — текущий масштаб диска (0…1)
+        for (let i = 0; i < letters.length; i++){
+          const L = letters[i], on = s >= L.d;
+          if (on !== L.on){ L.on = on; L.el.style.color = on ? 'var(--inv-fill)' : ''; }
+        }
+      }
+      const easeIO = function(u){ return u < .5 ? 2 * u * u : 1 - 2 * (1 - u) * (1 - u); };   // power2.inOut — та же кривая, что у заливки
+
+      fitTitle(); layoutLite(); titleFitters.push(function(){ fitTitle(); layoutLite(); });
 
       /* конечный размер карточки: на десктопе ×1.25, на телефоне — чтобы влезала в экран по ширине (94%) и по высоте (остаётся место под плашку «Перейти на сайт») */
       function endScale(){
@@ -936,7 +995,8 @@
       }
 
       if (reduce){
-        gsap.set(fill, { clipPath:'circle(150% at 50% 50%)' });
+        if (lite){ gsap.set(disc, { scale:1 }); gsap.set(glow, { opacity:1 }); letters.forEach(function(L){ L.el.style.color = 'var(--inv-fill)'; }); }
+        else gsap.set(fill, { clipPath:'circle(150% at 50% 50%)' });
         gsap.set(cardScale, { y:0, scale:Math.min(1.2, endScale()), autoAlpha:1 });
         gsap.set(card3d, { rotateX:0, rotateZ:0 });
         spans.forEach(function(el){ gsap.set(el, { opacity:parseFloat(el.dataset.o), visibility:'visible' }); });
@@ -946,13 +1006,20 @@
 
       /* значения-функции + invalidateOnRefresh: при повороте телефона или смене размера окна сцена пересчитывается под новый экран;
          на телефоне путь прокрутки на кейс короче (+=260% вместо +=360%): пять кейсов не превращаются в бесконечный свайп */
-      const tl = gsap.timeline({ scrollTrigger:{ trigger:scene, start:'top top', end:function(){ return (coarse || window.innerWidth < 700) ? '+=260%' : '+=360%'; }, scrub:0.8, pin:true, anticipatePin:1, invalidateOnRefresh:true }});
+      /* без pin: сцену держит CSS (position:sticky внутри .scene-track), ScrollTrigger только считает прогресс по прокрутке трека */
+      const tl = gsap.timeline({ scrollTrigger:{ trigger:track, start:'top top', end:function(){ return '+=' + Math.max(1, track.offsetHeight - scene.offsetHeight); }, scrub:0.8, invalidateOnRefresh:true },
+        onUpdate: lite ? function(){ flipLetters(easeIO(Math.min(1, Math.max(0, (tl.time() - .15) / .67)))); } : null });
       tl.fromTo(cardScale, { autoAlpha:0 }, { autoAlpha:1, ease:'power1.out', duration:.08 }, 0);
       tl.fromTo(cardScale, { y:function(){ return -vh()*0.34; }, scale:.09 }, { y:0, scale:endScale, ease:'power2.out', duration:1 }, 0);
       tl.fromTo(card3d, { rotateX:0, rotateZ:0 }, { rotateX:2520, rotateZ:720, ease:'power2.out', duration:1 }, 0);
       spans.forEach(function(el,i){ const o=parseFloat(el.dataset.o); const order=spans.length-1-i;
         tl.fromTo(el, { opacity:0, visibility:'hidden', yPercent:70 }, { opacity:o, visibility:'visible', yPercent:0, ease:'power2.out', duration:.32 }, order*0.07); });
-      tl.fromTo(fill, { clipPath:'circle(0% at 50% 50%)' }, { clipPath:'circle(150% at 50% 50%)', ease:'power2.inOut', duration:.67 }, .15);
+      if (lite){
+        tl.fromTo(disc, { scale:0 }, { scale:1, ease:'power2.inOut', duration:.67 }, .15);
+        tl.fromTo(glow, { opacity:0 }, { opacity:1, ease:'none', duration:.4 }, .3);
+      } else {
+        tl.fromTo(fill, { clipPath:'circle(0% at 50% 50%)' }, { clipPath:'circle(150% at 50% 50%)', ease:'power2.inOut', duration:.67 }, .15);
+      }
       tl.to([label, bar], { opacity:0, duration:.2, ease:'none' }, .3);
       tl.fromTo(goPlate, { y:function(){ return platePos().hidden; }, autoAlpha:0 }, { y:function(){ return platePos().shown; }, autoAlpha:1, ease:'power3.out', duration:.14 }, .86);
       tl.to(goPlate, { autoAlpha:1, duration:.2 });   // холд-буфер
