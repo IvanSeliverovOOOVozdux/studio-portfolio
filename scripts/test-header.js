@@ -54,10 +54,16 @@ const ok = (n, c, x) => { if (!c) fails++; console.log((c ? 'OK   ' : 'FAIL ') +
   ok('клик по «Контакты» прокручивает в самый низ, и пункт «Контакты» подсвечивается (а не остаётся «Прайс»)', await p.evaluate(() => innerHeight + scrollY >= document.documentElement.scrollHeight - 4) && await p.$eval('#navPill a[aria-current]', a => a.dataset.sec) === 'contact');
   // «Работы» после нижних разделов: сразу чистый фон первой сцены, без проигрывания анимации назад
   await scrollTo(0); await sleep(100); await scrollTo(topPrice + 60); await scrollTo(topPrice + 20); await sleep(200);
-  await p.click('#navPill a[data-sec="scenes"]'); await sleep(250);
-  const sc1 = await p.evaluate(() => { const s = document.querySelector('.scene'); const card = s.querySelector('.card-scale'), fill = s.querySelector('.fill');
+  // состояние читаем в том же кадре, что и клик (до отрисовки): никакого «мигания» отыгрыша быть не должно
+  const sc1 = await p.evaluate(() => { document.querySelector('#navPill a[data-sec="scenes"]').click(); const s = document.querySelector('.scene'); const card = s.querySelector('.card-scale'), fill = s.querySelector('.fill');
     return { y: Math.round(scrollY), op: +getComputedStyle(card).opacity, clip: getComputedStyle(fill).clipPath, spans: Array.from(s.querySelectorAll('.case-title span')).every(x => getComputedStyle(x).visibility === 'hidden') }; });
   ok('«Работы» из нижнего раздела: сразу чистый фон (карточка скрыта, заливка и заголовок не проигрываются назад)', sc1.y > 300 && sc1.op === 0 && /circle\(0(px|%)/.test(sc1.clip) && sc1.spans, sc1);
+  // то же из середины чужой сцены, с замером каждого кадра: карточка первой сцены ни разу не должна проявиться
+  const midY = await p.evaluate(() => document.querySelectorAll('.scene')[2].getBoundingClientRect().top + scrollY);
+  await scrollTo(midY + 600); await scrollTo(midY + 900); await scrollTo(midY + 700); await sleep(600);
+  const frames = await p.evaluate(() => new Promise(res => { document.querySelector('#navPill a[data-sec="scenes"]').click(); const card = document.querySelector('.scene .card-scale'), out = []; let n = 0;
+    (function f(){ out.push(+getComputedStyle(card).opacity); if (++n < 60) requestAnimationFrame(f); else res(out); })(); }));
+  ok('«Работы» из середины другой сцены: все 60 кадров подряд карточка первой сцены невидима (нет мигания)', frames.every(o => o === 0), frames.filter(o => o !== 0));
   ok('на обороте карточек только логотип и «Airium», без подписи «проектируем · кодим · запускаем»', await p.$$eval('.back-inner', a => a.length === 5 && a.every(e => e.children.length === 2 && !/проектируем/i.test(e.textContent))));
   await scrollTo(0); await sleep(200);
   ok('возврат в начало: шапка снова прозрачная, подсветки нет', await p.$eval('#siteHead', e => !e.classList.contains('solid')) && await p.$$eval('#navPill a[aria-current]', a => a.length) === 0);

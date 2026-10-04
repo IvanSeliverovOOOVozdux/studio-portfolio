@@ -746,9 +746,14 @@
         ScrollTrigger.getAll().forEach(function(st){ var tw = st.getTween && st.getTween(); if (tw) tw.progress(1); });
       }
       document.addEventListener('click', function(e){
-        var a = e.target.closest && e.target.closest('a[href^="#"]'); if (!a) return;
+        var a = e.target.closest && e.target.closest('a[href^="#"]'); if (!a || e.defaultPrevented || e.button) return;
+        var id = a.getAttribute('href').slice(1), el = id ? document.getElementById(id) : null;
+        if (id && (!el || el.hidden)) return;
+        /* прыгаем сами и сразу же, в том же кадре, ставим сцены в нужное состояние — иначе на миг виден их «отыгрыш» */
+        e.preventDefault();
+        window.scrollTo(0, el ? el.getBoundingClientRect().top + window.pageYOffset : 0);
+        settleScenes();
         requestAnimationFrame(function(){ requestAnimationFrame(settleScenes); });
-        setTimeout(settleScenes, 150);
       });
       update();
     })();
