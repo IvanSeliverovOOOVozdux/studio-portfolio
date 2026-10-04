@@ -50,41 +50,95 @@
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
 
-  /* ---------- HEADER (плавающая пилюля-меню + CTA) ---------- */
+  /* ---------- HEADER: фиксированная шапка ----------
+     сверху прозрачная; после прокрутки становится матовой полосой цвета фона (читается поверх любой сцены, и тёмной);
+     при прокрутке вниз уезжает вверх, при прокрутке вверх возвращается; пункт текущего раздела подсвечивается, внизу — полоса прогресса;
+     на узких экранах меню прячется в бургер с полноэкранной панелью */
   .site-head{
-    position:absolute; top:0; left:0; right:0; z-index:40;
+    position:fixed; top:0; left:0; right:0; z-index:50;
     display:flex; align-items:center; justify-content:space-between;
     padding:20px clamp(20px,5vw,64px);
+    transition:transform .5s cubic-bezier(.2,.8,.2,1), padding .35s cubic-bezier(.2,.8,.2,1), background-color .35s, box-shadow .35s;
   }
+  .site-head.solid{
+    padding-top:12px; padding-bottom:12px; background:rgba(236,226,208,.94); box-shadow:0 1px 0 var(--line);
+  }
+  @supports (backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px)){
+    .site-head.solid{ background:rgba(236,226,208,.8); -webkit-backdrop-filter:blur(14px) saturate(1.15); backdrop-filter:blur(14px) saturate(1.15); }
+  }
+  .site-head.away{ transform:translateY(-101%); }
+  .site-head a:focus-visible, .burger:focus-visible, .mnav a:focus-visible{ outline:2px solid var(--garnet); outline-offset:3px; }
+  .head-progress{ position:fixed; top:0; left:0; right:0; height:2px; z-index:51; pointer-events:none; background:var(--garnet); transform:scaleX(0); transform-origin:0 50%; }
   .brand{ display:inline-flex; align-items:center; gap:12px; text-decoration:none; color:var(--ink); }
-  .brand img{ height:44px; width:auto; display:block; }
+  .brand img{ height:44px; width:auto; display:block; transition:height .35s cubic-bezier(.2,.8,.2,1); }
+  .site-head.solid .brand img{ height:36px; }
   .brand .wm{ font-family:"Hanken Grotesk", system-ui, sans-serif; font-weight:500; font-size:16px; letter-spacing:.36em; text-transform:uppercase; padding-left:.36em; }
   .hgroup{ display:flex; align-items:center; gap:16px; }
   .hstatus{ display:inline-flex; align-items:center; gap:7px; font-family:"JetBrains Mono"; font-size:11px; letter-spacing:.04em; text-transform:uppercase; color:var(--ink-2); }
   .hstatus .dot{ width:8px; height:8px; border-radius:50%; background:var(--green); position:relative; }
   .hstatus .dot::after{ content:""; position:absolute; inset:0; border-radius:50%; background:var(--green); animation:pulse 1.9s ease-out infinite; }
   .navpill{
-    position:absolute; left:50%; transform:translateX(-50%);
+    position:absolute; left:50%; transform:translateX(-50%); isolation:isolate;
     display:flex; gap:4px; padding:6px; border-radius:999px;
-    background:rgba(27,23,20,.04); border:1px solid rgba(27,23,20,.12); backdrop-filter:blur(10px);
+    background:rgba(27,23,20,.04); border:1px solid rgba(27,23,20,.12);
   }
   .navpill a{
-    position:relative; color:var(--ink); text-decoration:none; font-family:"JetBrains Mono";
+    position:relative; z-index:1; color:var(--ink); text-decoration:none; font-family:"JetBrains Mono";
     font-size:12.5px; letter-spacing:.05em; text-transform:uppercase;
-    padding:9px 18px; border-radius:999px; opacity:.85; transition:background .25s, opacity .25s;
+    padding:9px 18px; border-radius:999px; opacity:.85; transition:background .25s, opacity .25s, color .3s;
   }
   .navpill a:hover{ opacity:1; background:rgba(27,23,20,.06); }
+  .navpill a[aria-current="location"]{ color:var(--hero-bg); opacity:1; background:transparent; }
+  /* тёмная «капсула» под текущим пунктом переезжает между пунктами */
+  .navpill .ind{ position:absolute; z-index:0; top:6px; bottom:6px; left:0; width:0; border-radius:999px; background:var(--ink); opacity:0; pointer-events:none;
+    transition:transform .5s cubic-bezier(.3,1.2,.4,1), width .5s cubic-bezier(.3,1.2,.4,1), opacity .25s; }
+  .hright{ display:flex; align-items:center; gap:10px; }
   .hcta{
     display:inline-flex; align-items:center; gap:9px; text-decoration:none;
-    font-family:"Hanken Grotesk"; font-weight:600; font-size:14px;
+    font-family:"Hanken Grotesk", system-ui, sans-serif; font-weight:600; font-size:14px;
     padding:12px 22px; border-radius:999px; background:var(--garnet); color:#fff;
     box-shadow:0 14px 28px -12px rgba(158,43,69,.6);
     transition:transform .3s cubic-bezier(.2,.8,.2,1), box-shadow .3s, background .3s;
   }
   .hcta:hover{ transform:translateY(-2px); background:#b23a52; box-shadow:0 18px 34px -12px rgba(158,43,69,.7); }
+  .hcta:active{ transform:translateY(0) scale(.98); }
   .hcta svg{ width:15px; height:15px; transition:transform .3s cubic-bezier(.2,.8,.2,1); }
   .hcta:hover svg{ transform:translate(2px,-2px); }
-  @media(max-width:880px){ .navpill, .hstatus{ display:none; } }
+
+  /* бургер и полноэкранная панель меню (только узкие экраны) */
+  .burger{ display:none; position:relative; width:48px; height:48px; border-radius:50%; border:1px solid var(--line); background:rgba(27,23,20,.04); color:var(--ink); cursor:pointer; -webkit-tap-highlight-color:transparent; }
+  .burger span{ position:absolute; left:15px; right:15px; top:23px; height:2px; border-radius:2px; background:currentColor; transition:transform .4s cubic-bezier(.2,.8,.2,1); }
+  .burger span:nth-child(1){ transform:translateY(-4px); }
+  .burger span:nth-child(2){ transform:translateY(4px); }
+  .menu-open .burger span:nth-child(1){ transform:rotate(45deg); }
+  .menu-open .burger span:nth-child(2){ transform:rotate(-45deg); }
+  .mnav{
+    position:fixed; inset:0; z-index:49; display:flex; flex-direction:column; overflow:auto; background:var(--hero-bg);
+    padding:calc(var(--head-h) + 12px) clamp(20px,5vw,64px) max(28px, env(safe-area-inset-bottom));
+    clip-path:inset(0 0 100% 0); visibility:hidden; transition:clip-path .55s cubic-bezier(.7,0,.2,1), visibility 0s .55s;
+  }
+  .menu-open .mnav{ clip-path:inset(0); visibility:visible; transition:clip-path .55s cubic-bezier(.7,0,.2,1), visibility 0s; }
+  .mnav a.ml{
+    display:flex; align-items:baseline; gap:16px; min-height:64px; padding:12px 0; border-bottom:1px solid var(--line); text-decoration:none; color:var(--ink);
+    font-family:"Bricolage Grotesque", system-ui, sans-serif; font-weight:800; font-size:clamp(30px,8.4vw,52px); line-height:1.1; text-transform:uppercase;
+    opacity:0; transform:translateY(18px); transition:opacity .35s, transform .5s cubic-bezier(.2,.8,.2,1), color .25s;
+  }
+  .mnav{ counter-reset:ml; }
+  .mnav a.ml[hidden]{ display:none; }
+  .mnav a.ml{ counter-increment:ml; }
+  .mnav a.ml::before{ content:counter(ml, decimal-leading-zero); font-family:"JetBrains Mono"; font-weight:400; font-size:12px; letter-spacing:.12em; color:var(--garnet); }
+  .mnav a.ml[aria-current="location"]{ color:var(--garnet); }
+  .menu-open .mnav a.ml{ opacity:1; transform:none; transition-delay:calc(.14s + var(--i, 0) * 55ms); }
+  .mnav .mcta{ margin-top:28px; justify-content:center; padding:18px 24px; font-size:16px; opacity:0; transform:translateY(18px); transition:opacity .35s, transform .5s cubic-bezier(.2,.8,.2,1), box-shadow .3s, background .3s; }
+  .menu-open .mnav .mcta{ opacity:1; transform:none; transition-delay:.5s; }
+  .mnav .mfoot{ margin-top:auto; padding-top:26px; display:flex; align-items:center; gap:10px; font-family:"JetBrains Mono"; font-size:12px; letter-spacing:.04em; color:var(--ink-2); }
+  .mnav .mfoot .dot{ width:8px; height:8px; border-radius:50%; background:var(--green); }
+  html.menu-open{ overflow:hidden; }
+  @media(max-width:1199px){ .hstatus{ display:none; } }
+  @media(max-width:960px){ .navpill, .hright .hcta{ display:none; } .burger{ display:inline-block; } }
+  @media(prefers-reduced-motion:reduce){
+    .site-head, .brand img, .navpill .ind, .burger span, .mnav, .mnav a.ml, .mnav .mcta{ transition-duration:.01ms !important; transition-delay:0s !important; }
+  }
 
 
   /* ---------- HERO (контур + барабан ниши) ---------- */
@@ -117,9 +171,9 @@
   .hero .roll .r.on{ transform:translateY(0); opacity:1; }
   .hero .roll .r.out{ transform:translateY(-125%); opacity:0; }
   .hero .roll .r.reset{ transition:none; }
-  .hero .sub{ max-width:480px; margin-top:30px; color:var(--ink-2); font-family:"Hanken Grotesk"; font-size:17px; line-height:1.6; }
+  .hero .sub{ max-width:480px; margin-top:30px; color:var(--ink-2); font-family:"Hanken Grotesk", system-ui, sans-serif; font-size:17px; line-height:1.6; }
   .hero .row{ display:flex; gap:14px; align-items:center; margin-top:30px; flex-wrap:wrap; }
-  .hero .btn{ display:inline-flex; align-items:center; gap:10px; text-decoration:none; font-family:"Hanken Grotesk"; font-weight:600; font-size:16px; padding:16px 30px; border-radius:999px; cursor:pointer; border:0; will-change:transform; }
+  .hero .btn{ display:inline-flex; align-items:center; gap:10px; text-decoration:none; font-family:"Hanken Grotesk", system-ui, sans-serif; font-weight:600; font-size:16px; padding:16px 30px; border-radius:999px; cursor:pointer; border:0; will-change:transform; }
   .hero .btn-fill{ background:var(--ink); color:var(--hero-bg); transition:transform .35s cubic-bezier(.2,.8,.2,1); }
   .hero .btn-ghost{ background:transparent; border:1px solid var(--line); color:var(--ink); transition:border-color .25s; }
   .hero .btn-ghost:hover{ border-color:var(--ink); }
@@ -410,7 +464,7 @@
   .plan li{ font-size:15px; display:flex; gap:10px; align-items:flex-start; line-height:1.4; }
   .plan li::before{ content:"—"; color:var(--garnet); }
   .plan.dark li::before{ color:#cf6b82; }
-  .pbtn{ margin-top:auto; align-self:flex-start; display:inline-flex; align-items:center; gap:8px; text-decoration:none; font-family:"Hanken Grotesk"; font-weight:600; font-size:15px; padding:13px 24px; border-radius:999px; background:var(--ink); color:var(--hero-bg); transition:transform .25s, background .25s, color .25s; }
+  .pbtn{ margin-top:auto; align-self:flex-start; display:inline-flex; align-items:center; gap:8px; text-decoration:none; font-family:"Hanken Grotesk", system-ui, sans-serif; font-weight:600; font-size:15px; padding:13px 24px; border-radius:999px; background:var(--ink); color:var(--hero-bg); transition:transform .25s, background .25s, color .25s; }
   .plan.dark .pbtn{ background:var(--hero-bg); color:var(--ink); }
   .pbtn:hover{ background:var(--garnet); color:#fff; }
   .price-note{ margin-top:24px; font-family:"JetBrains Mono"; font-size:13px; color:var(--ink-2); }
@@ -442,15 +496,34 @@
 
   <!-- HERO -->
   <section class="hero">
-    <header class="site-head">
+    <header class="site-head" id="siteHead">
       <div class="hgroup">
         <a class="brand" href="#" aria-label="Airium — на главную"><img src="assets/logo/airium-mark.png" alt="" width="44" height="44" /><span class="wm">Airium</span></a>
         <span class="hstatus"><span class="dot"></span> открыты</span>
       </div>
-      <nav class="navpill">
-        <a href="#scenes">Работы</a><a href="#price">Прайс</a><a href="#about">О нас</a><a href="#reviews" id="navReviews" hidden>Отзывы</a><a href="#contact">Контакты</a>
+      <nav class="navpill" id="navPill" aria-label="Разделы сайта">
+        <i class="ind" aria-hidden="true"></i>
+        <a href="#scenes" data-sec="scenes">Работы</a><a href="#about" data-sec="about">О нас</a><a href="#reviews" id="navReviews" data-sec="reviews" hidden>Отзывы</a><a href="#price" data-sec="price">Прайс</a><a href="#contact" data-sec="contact">Контакты</a>
       </nav>
+      <div class="hright">
+        <a class="hcta" href="#contact">Обсудить проект
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>
+        </a>
+        <button class="burger" id="burger" type="button" aria-label="Открыть меню" aria-expanded="false" aria-controls="mnav"><span></span><span></span></button>
+      </div>
     </header>
+    <div class="head-progress" id="headProgress" aria-hidden="true"></div>
+    <nav class="mnav" id="mnav" aria-label="Меню" inert>
+      <a class="ml" href="#scenes" data-sec="scenes" style="--i:0">Работы</a>
+      <a class="ml" href="#about" data-sec="about" style="--i:1">О нас</a>
+      <a class="ml" href="#reviews" id="navReviewsM" data-sec="reviews" style="--i:2" hidden>Отзывы</a>
+      <a class="ml" href="#price" data-sec="price" style="--i:3">Прайс</a>
+      <a class="ml" href="#contact" data-sec="contact" style="--i:4">Контакты</a>
+      <a class="hcta mcta" href="#contact">Обсудить проект
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>
+      </a>
+      <div class="mfoot"><span class="dot"></span> Работаем ежедневно · 10:00–22:00 МСК</div>
+    </nav>
 
     <div class="hero-accent" aria-hidden="true"></div>
 
@@ -596,6 +669,78 @@
           b.style.transform = 'translate(' + ((e.clientX-r.left-r.width/2)*0.3) + 'px,' + ((e.clientY-r.top-r.height/2)*0.4) + 'px)'; });
         b.addEventListener('pointerleave', function(){ b.style.transform = ''; });
       }
+    })();
+  </script>
+
+  <!-- ШАПКА: состояние при прокрутке, подсветка раздела, прогресс, меню-бургер -->
+  <script>
+    (function(){
+      var root = document.documentElement, head = document.getElementById('siteHead'), pill = document.getElementById('navPill'),
+          ind = pill.querySelector('.ind'), prog = document.getElementById('headProgress'),
+          burger = document.getElementById('burger'), mnav = document.getElementById('mnav');
+      var links = [].slice.call(document.querySelectorAll('[data-sec]'));
+      var ids = ['scenes', 'about', 'reviews', 'price', 'contact'];
+      var lastY = window.pageYOffset, active = '', keepUntil = 0, ticking = false, menuOpen = false, indReady = false;
+
+      function setActive(id){
+        if (id === active) return;
+        active = id;
+        links.forEach(function(a){ if (a.dataset.sec === id) a.setAttribute('aria-current', 'location'); else a.removeAttribute('aria-current'); });
+        moveInd();
+      }
+      function moveInd(){
+        var a = pill.querySelector('a[aria-current]');
+        if (!a || a.offsetWidth === 0){ ind.style.opacity = '0'; return; }
+        if (!indReady){ ind.style.transition = 'none'; }
+        ind.style.width = a.offsetWidth + 'px';
+        ind.style.transform = 'translateX(' + a.offsetLeft + 'px)';
+        ind.style.opacity = '1';
+        if (!indReady){ void ind.offsetWidth; ind.style.transition = ''; indReady = true; }
+      }
+      function section(){
+        var line = window.innerHeight * 0.4, found = '';
+        for (var i = 0; i < ids.length; i++){
+          var el = document.getElementById(ids[i]); if (!el || el.hidden) continue;
+          var r = el.getBoundingClientRect();
+          if (r.height > 0 && r.top <= line && r.bottom > line){ found = ids[i]; break; }
+        }
+        return found;
+      }
+      function update(){
+        ticking = false;
+        var y = Math.max(0, window.pageYOffset), dy = y - lastY;
+        head.classList.toggle('solid', y > 24 || menuOpen);
+        if (menuOpen || y < 120 || (dy < -6) || performance.now() < keepUntil) head.classList.remove('away');
+        else if (dy > 6) head.classList.add('away');
+        if (Math.abs(dy) > 6) lastY = y;
+        var max = document.documentElement.scrollHeight - window.innerHeight;
+        prog.style.transform = 'scaleX(' + (max > 0 ? Math.min(1, y / max) : 0).toFixed(4) + ')';
+        setActive(section());
+      }
+      function onScroll(){ if (!ticking){ ticking = true; requestAnimationFrame(update); } }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('resize', function(){ moveInd(); onScroll(); });
+      if (window.ResizeObserver) new ResizeObserver(moveInd).observe(pill);     // пункт «Отзывы» появляется позже — капсула пересчитывается
+      head.addEventListener('focusin', function(){ head.classList.remove('away'); });
+      links.forEach(function(a){ a.addEventListener('click', function(){ keepUntil = performance.now() + 900; }); });
+      document.querySelectorAll('.hcta, .brand').forEach(function(a){ a.addEventListener('click', function(){ keepUntil = performance.now() + 900; }); });
+
+      // меню на узких экранах
+      function setMenu(on, restoreFocus){
+        if (on === menuOpen) return;
+        menuOpen = on;
+        root.classList.toggle('menu-open', on);
+        burger.setAttribute('aria-expanded', String(on));
+        burger.setAttribute('aria-label', on ? 'Закрыть меню' : 'Открыть меню');
+        mnav.inert = !on;
+        if (on){ head.classList.remove('away'); head.classList.add('solid'); }
+        else { update(); if (restoreFocus) burger.focus({ preventScroll: true }); }
+      }
+      burger.addEventListener('click', function(){ setMenu(!menuOpen, false); });
+      mnav.addEventListener('click', function(e){ if (e.target.closest('a')) setMenu(false, false); });
+      document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && menuOpen) setMenu(false, true); });
+      matchMedia('(min-width:961px)').addEventListener('change', function(e){ if (e.matches) setMenu(false, false); });
+      update();
     })();
   </script>
 
@@ -831,7 +976,7 @@
       .then(function(j){
         if (!j || !j.ok || !j.reviews || !j.reviews.length) return;            // нет одобренных отзывов: блок остаётся скрытым
         data = j.reviews;
-        sec.hidden = false; if (navLink) navLink.hidden = false;
+        sec.hidden = false; if (navLink) navLink.hidden = false; var navM = document.getElementById('navReviewsM'); if (navM) navM.hidden = false;
         if (window.ScrollTrigger) setTimeout(function(){ ScrollTrigger.refresh(); }, 300);
         if (RM || !('IntersectionObserver' in window)) return void showAll();
         navBar.hidden = data.length < 2;                                         // с одним отзывом листать нечего
