@@ -70,7 +70,7 @@ const LANDSCAPE = [[667, 375], [844, 390]];
     const l = ls[0].getBoundingClientRect().left, r = innerWidth - ls[ls.length - 1].getBoundingClientRect().right;
     return { name: sc.querySelector('.scene-label').textContent.replace(/^.*— /, ''), left: +l.toFixed(1), right: +r.toFixed(1), fs: +fs.toFixed(1), tol: fs * .05 + 2 };
   }));
-  for (const [w, h, mob] of [[320, 568, 1], [360, 740, 1], [390, 844, 1], [430, 932, 1], [768, 1024, 1], [1366, 768, 0], [1440, 900, 0], [1920, 1080, 0], [2560, 1440, 0]]) {
+  for (const [w, h, mob] of [[320, 568, 1], [360, 740, 1], [390, 844, 1], [430, 932, 1], [768, 1024, 1], [667, 375, 1], [844, 390, 1], [1366, 650, 0], [1439, 684, 0], [1503, 736, 0], [1366, 768, 0], [1440, 900, 0], [1920, 1080, 0], [2560, 1440, 0]]) {
     await p.setViewport({ width: w, height: h, isMobile: !!mob, hasTouch: !!mob, deviceScaleFactor: 1 }); await p.goto(t.BASE + '/', { waitUntil: 'networkidle0' }); await sleep(900);
     const rows = await titleSym();
     const rw = await p.evaluate(() => Array.from(document.querySelectorAll('.scene')).map(sc => { const r = Array.from(sc.querySelectorAll('.case-title span')).filter(e => e.getClientRects().length).map(e => e.getBoundingClientRect()); let gap = 0; for (let i = 1; i < r.length; i++) gap = Math.max(gap, r[i].top - r[i - 1].bottom); return { n: r.length, gap: Math.round(gap) }; }));

@@ -949,7 +949,11 @@
         Array.prototype.forEach.call(s0.children, function(n){ if (n.classList.contains('sp')) gaps += window.innerWidth * .025; else letters += n.getBoundingClientRect().width; });
         /* на компьютере — как было: шрифт уменьшается, только если сами буквы не помещаются, а пробел между словами сжимается сам;
            на телефоне пробел между словами сохраняется (иначе слова слипаются) и остаётся небольшой запас */
-        const fit = fs * (avail * (lite ? .985 : 1) - (lite ? gaps : 0)) / letters;
+        let fit = fs * (avail * (lite ? .985 : 1) - (lite ? gaps : 0)) / letters;
+        /* и по высоте: все строки (4, на телефоне в портрете 7) должны уместиться между полями 4vh сверху и снизу —
+           на невысоком окне нижняя строка иначе обрезалась краем экрана (высота строки = 0,9 кегля) */
+        const rowsN = spans.filter(function(s){ return s.getClientRects().length > 0; }).length || 4, H = scene.querySelector('.stage').clientHeight;
+        if (H > 0) fit = Math.min(fit, (H * .92) / (rowsN * .9) * .96);
         if (letters > 0 && fit < fs) spans.forEach(function(s){ s.style.fontSize = fit.toFixed(2) + 'px'; });
       }
       /* лёгкий режим: размер диска-заливки и расстояние от каждой буквы заголовка до центра (когда диск до неё дорастёт, буква меняет цвет) */
