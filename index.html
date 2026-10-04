@@ -1092,16 +1092,16 @@
     (function(){
       const hint = document.getElementById('scrollHint'), first = document.querySelector('.scene-track');
       if (!hint || !first || reduce) return;
-      let raf = 0;
+      let raf = 0, ready = false;                     // при открытии сайта подсказка появляется не сразу, а через пару секунд
       function check(){
         raf = 0;
         const top = first.getBoundingClientRect().top, h = window.innerHeight;
-        hint.classList.toggle('on', top > -Math.min(160, h * .15));
+        hint.classList.toggle('on', ready && top > -Math.min(160, h * .15));
       }
       const req = function(){ if (!raf) raf = requestAnimationFrame(check); };
       window.addEventListener('scroll', req, { passive:true });
       window.addEventListener('resize', req);
-      check();
+      setTimeout(function(){ ready = true; check(); }, 2000);
     })();
     (function(){                                      // подгонка заголовков заново: после загрузки шрифта и при смене размера/поворота экрана
       var t = 0; function refit(){ titleFitters.forEach(function(f){ f(); }); }
