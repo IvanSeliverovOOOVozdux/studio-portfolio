@@ -943,7 +943,9 @@
         const cs = getComputedStyle(s0), fs = parseFloat(cs.fontSize), avail = s0.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
         let letters = 0, gaps = 0;
         Array.prototype.forEach.call(s0.children, function(n){ if (n.classList.contains('sp')) gaps += window.innerWidth * .025; else letters += n.getBoundingClientRect().width; });
-        const fit = fs * (avail * .985 - gaps) / letters;
+        /* на компьютере — как было: шрифт уменьшается, только если сами буквы не помещаются, а пробел между словами сжимается сам;
+           на телефоне пробел между словами сохраняется (иначе слова слипаются) и остаётся небольшой запас */
+        const fit = fs * (avail * (lite ? .985 : 1) - (lite ? gaps : 0)) / letters;
         if (letters > 0 && fit < fs) spans.forEach(function(s){ s.style.fontSize = fit.toFixed(2) + 'px'; });
       }
       /* лёгкий режим: размер диска-заливки и расстояние от каждой буквы заголовка до центра (когда диск до неё дорастёт, буква меняет цвет) */
