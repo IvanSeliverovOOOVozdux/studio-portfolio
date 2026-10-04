@@ -260,24 +260,27 @@
     position:absolute; top:54px; left:50%; transform:translateX(-50%); z-index:3;
     width:50px; height:2px; border-radius:2px; background:var(--garnet); opacity:.65;
   }
-  /* подсказка «листайте вниз»: видна, пока сцена пустая (карточка ещё не вылетела), гаснет с первых пикселей прокрутки.
-     Нужна при переходе по меню на «Работы»: человек попадает на пустой фон и не понимает, что сцену крутят колесом */
+  /* подсказка «крутите вниз»: одна на весь блок работ, прикреплена к низу экрана. Появляется, как только снизу показался первый кейс
+     (и при переходе по меню на «Работы» — там человек попадает на пустой фон), гаснет, когда начинает вылетать карточка; на остальных кейсах её нет */
   .scroll-hint{
-    position:absolute; left:0; right:0; bottom:30px; z-index:6; width:max-content; margin:0 auto; pointer-events:none;
-    display:flex; flex-direction:column; align-items:center; gap:12px;
-    color:#fff; mix-blend-mode:difference;
+    position:fixed; left:0; right:0; bottom:calc(28px + env(safe-area-inset-bottom)); z-index:40; width:max-content; margin:0 auto; pointer-events:none;
+    display:flex; flex-direction:column; align-items:center; gap:7px; color:var(--ink);
+    opacity:0; visibility:hidden; transform:translateY(10px);
+    transition:opacity .45s ease, transform .45s cubic-bezier(.2,.8,.2,1), visibility 0s linear .45s;
   }
+  .scroll-hint.on{ opacity:.85; visibility:visible; transform:none; transition:opacity .45s ease, transform .45s cubic-bezier(.2,.8,.2,1), visibility 0s; }
   .sh-mouse{ position:relative; width:26px; height:40px; border:2px solid currentColor; border-radius:14px; }
+  /* колёсико стоит на месте, как у настоящей мышки, а рубчики на нём бегут вниз — будто его крутят */
   .sh-mouse i{
-    position:absolute; left:50%; top:7px; width:4px; height:8px; margin-left:-2px; border-radius:2px; background:currentColor;
-    animation:sh-wheel 1.7s cubic-bezier(.5,0,.2,1) infinite;
+    position:absolute; left:50%; top:6px; width:6px; height:11px; margin-left:-3px; border-radius:3px;
+    background:repeating-linear-gradient(to bottom, currentColor 0 2px, transparent 2px 4px);
+    background-size:100% 4px; animation:sh-wheel .5s linear infinite;
+    -webkit-mask:linear-gradient(to bottom, transparent, #000 30%, #000 70%, transparent); mask:linear-gradient(to bottom, transparent, #000 30%, #000 70%, transparent);
   }
-  @keyframes sh-wheel{ 0%{ transform:translateY(0); opacity:0; } 18%{ opacity:1; } 65%,100%{ transform:translateY(13px); opacity:0; } }
-  .sh-chev{ display:none; flex-direction:column; align-items:center; }
-  .sh-chev svg{ width:22px; height:12px; margin-top:-3px; animation:sh-chev 1.7s ease-in-out infinite; }
-  .sh-chev svg + svg{ animation-delay:.18s; }
-  @keyframes sh-chev{ 0%,100%{ transform:translateY(-3px); opacity:.25; } 45%{ transform:translateY(3px); opacity:1; } }
-  .sh-text{ font-family:"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace; font-size:11px; letter-spacing:.2em; text-transform:uppercase; }
+  @keyframes sh-wheel{ to{ background-position:0 4px; } }
+  .sh-arrow{ width:14px; height:8px; animation:sh-arrow 1.5s ease-in-out infinite; }
+  @keyframes sh-arrow{ 0%{ transform:translateY(-3px); opacity:0; } 40%{ opacity:1; } 100%{ transform:translateY(5px); opacity:0; } }
+  .sh-chev{ display:none; }
 
   .card-wrap{ position:relative; z-index:5; display:flex; align-items:center; justify-content:center; }
 
@@ -563,10 +566,12 @@
   .lite .site-head.solid{ background:rgba(236,226,208,.96); -webkit-backdrop-filter:none; backdrop-filter:none; }
   .lite .case-title, .lite .scene-label{ mix-blend-mode:normal; }                     /* контраст букв считается заранее (--inv-*), а не смешиванием каждый кадр */
   .lite .scene-label{ color:var(--inv-base); }
-  /* телефон: вместо мышки стрелки; отступ снизу — над панелью браузера (сцена высотой lvh, низ может прятаться под ней) */
-  .lite .scroll-hint{ mix-blend-mode:normal; color:var(--inv-base); bottom:calc(100lvh - 100svh + 26px); }
-  .lite .sh-mouse{ display:none; }
-  .lite .sh-chev{ display:flex; }
+  /* телефон: вместо мышки две стрелки вниз */
+  .lite .sh-mouse, .lite .sh-arrow{ display:none; }
+  .lite .sh-chev{ display:flex; flex-direction:column; align-items:center; }
+  .lite .sh-chev svg{ width:24px; height:13px; margin-top:-3px; animation:sh-chev 1.5s ease-in-out infinite; }
+  .lite .sh-chev svg + svg{ animation-delay:.18s; }
+  @keyframes sh-chev{ 0%,100%{ transform:translateY(-3px); opacity:.25; } 45%{ transform:translateY(3px); opacity:1; } }
   .lite .case-title{ color:var(--inv-base); }
   .lite .face{ box-shadow:0 18px 32px -18px rgba(27,23,20,.5), 0 0 0 1px rgba(27,23,20,.06); }
   .lite .fill{ clip-path:none; background:none; will-change:auto; }
@@ -692,6 +697,7 @@
 
   <!-- РАБОТЫ: 5 scroll-сцен генерируются из CASES в JS -->
   <div id="scenes" aria-label="Работы"></div>
+  <div class="scroll-hint" id="scrollHint" aria-hidden="true"><span class="sh-mouse"><i></i></span><svg class="sh-arrow" viewBox="0 0 14 8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5 7 6.5l5.5-5"/></svg><span class="sh-chev"><svg viewBox="0 0 22 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2l9 8 9-8"/></svg><svg viewBox="0 0 22 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2l9 8 9-8"/></svg></span></div>
 
   <!-- ПРОЦЕСС -->
   <section class="sec" id="about">
@@ -947,10 +953,6 @@
           '<div class="case-title" aria-hidden="true">'+rows+'</div>'+
           '<div class="scene-label">Кейс '+num+' — '+c.name+'</div>'+
           '<div class="scene-bar"></div>'+
-          '<div class="scroll-hint" aria-hidden="true"><span class="sh-mouse"><i></i></span><span class="sh-chev">'+
-            '<svg viewBox="0 0 22 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2l9 8 9-8"/></svg>'+
-            '<svg viewBox="0 0 22 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2l9 8 9-8"/></svg>'+
-          '</span><span class="sh-text">Листайте вниз</span></div>'+
           '<div class="card-wrap">'+
             '<div class="card-scale"><div class="card-tilt"><div class="card-3d">'+
               '<div class="face front"><span class="badge">'+c.badge+'</span><picture><source type="image/webp" srcset="assets/cases/'+c.img.replace('.png','.webp')+'"><img src="assets/cases/'+c.img+'" width="1440" height="900" decoding="async" alt="'+c.name+' — главный экран"></picture><div class="card-cap"><b>'+c.name+'</b><span>'+c.niche+'</span></div></div>'+
@@ -974,7 +976,6 @@
       const goLink = goPlate.querySelector('a');
       const label = scene.querySelector('.scene-label');
       const bar = scene.querySelector('.scene-bar');
-      const hint = scene.querySelector('.scroll-hint');
       const hoverZone = scene.querySelector('.card-wrap');
       const spans = [].slice.call(scene.querySelectorAll('.case-title span'));
 
@@ -1081,12 +1082,27 @@
         tl.fromTo(fill, { clipPath:'circle(0% at 50% 50%)' }, { clipPath:'circle(150% at 50% 50%)', ease:'power2.inOut', duration:.67 }, .15);
       }
       tl.to([label, bar], { opacity:0, duration:.2, ease:'none' }, .3);
-      tl.to(hint, { autoAlpha:0, y:12, duration:.06, ease:'none' }, .01);   // подсказка гаснет почти сразу, как только начали крутить
       tl.fromTo(goPlate, { y:function(){ return platePos().hidden; }, autoAlpha:0 }, { y:function(){ return platePos().shown; }, autoAlpha:1, ease:'power3.out', duration:.14 }, .86);
       tl.to(goPlate, { autoAlpha:1, duration:.2 });   // холд-буфер
     }
 
     gsap.utils.toArray('.scene').forEach(setupScene);
+
+    /* подсказка «крутите вниз» — только у первого кейса: видна, пока его сцена показалась снизу экрана и карточка ещё не начала вылетать */
+    (function(){
+      const hint = document.getElementById('scrollHint'), first = document.querySelector('.scene-track');
+      if (!hint || !first || reduce) return;
+      let raf = 0;
+      function check(){
+        raf = 0;
+        const top = first.getBoundingClientRect().top, h = window.innerHeight;
+        hint.classList.toggle('on', top < h - 110 && top > -Math.min(160, h * .15));
+      }
+      const req = function(){ if (!raf) raf = requestAnimationFrame(check); };
+      window.addEventListener('scroll', req, { passive:true });
+      window.addEventListener('resize', req);
+      check();
+    })();
     (function(){                                      // подгонка заголовков заново: после загрузки шрифта и при смене размера/поворота экрана
       var t = 0; function refit(){ titleFitters.forEach(function(f){ f(); }); }
       window.addEventListener('resize', function(){ clearTimeout(t); t = setTimeout(refit, 100); });
