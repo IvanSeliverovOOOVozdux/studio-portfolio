@@ -7,7 +7,7 @@ const EDGE = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe'
 const OUT = path.join(__dirname, '..', 'assets', 'cases');
 
 const SITES = [
-  { name: 'soberi',  url: 'https://soberi-party-dmitrov.vercel.app' },
+  { name: 'soberi',  url: 'https://soberiparty.art' },
   { name: 'sillage', url: 'https://sillage-expo.vercel.app' },
   { name: 'cafe',    url: 'https://cafe-aster.vercel.app' },
   { name: 'lawyer',  url: 'https://lawyer-sokolov.vercel.app' },
