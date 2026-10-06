@@ -253,7 +253,7 @@
             AV.colors.map(function(c){ return '<button type="button" role="radio" aria-checked="false" data-color="' + esc(c.c) + '" style="--c:' + esc(c.c) + '" aria-label="' + esc(c.n) + '" title="' + esc(c.n) + '"></button>'; }).join('') + '</div></div>' +
         '</fieldset>' +
         '<div class="fld"><label class="consent"><input type="checkbox" id="consent" name="consent" aria-describedby="e-consent"><span class="box">' + CHECK + '</span>' +
-          '<span>Согласен(на) на публикацию этого отзыва с моим именем на сайте Airium и на обработку этих данных для публикации. Удалим по вашей просьбе в любой момент.</span></label><div class="err" id="e-consent" role="alert"></div></div>' +
+          '<span>Согласен(на) на публикацию этого отзыва с моим именем на сайте Airium и на обработку этих данных для публикации по <a href="/privacy.html" target="_blank" rel="noopener">политике конфиденциальности</a>. Удалим по вашей просьбе в любой момент.</span></label><div class="err" id="e-consent" role="alert"></div></div>' +
         '<div class="hp" aria-hidden="true"><label>Сайт<input type="text" name="website" id="website" tabindex="-1" autocomplete="off"></label></div>' +
         '<div class="formerr" id="formerr" role="alert"></div>' +
         '<button class="submit" type="submit" id="go"><span class="spin" aria-hidden="true"></span><span id="golabel">Отправить отзыв</span></button>' +

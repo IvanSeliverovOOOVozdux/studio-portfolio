@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Политика конфиденциальности — Airium</title>
+<meta name="description" content="Как веб-студия Airium обрабатывает и защищает персональные данные." />
+<meta name="theme-color" content="#ece2d0" />
+<link rel="icon" type="image/png" sizes="64x64" href="/assets/logo/favicon-64.png" />
+<link rel="preload" href="assets/fonts/onest-cyrillic-var.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="preload" href="assets/fonts/bricolage-grotesque-latin-var.woff2" as="font" type="font/woff2" crossorigin />
+<style>
+  @font-face{ font-family:'Bricolage Grotesque'; font-style:normal; font-weight:400 800; font-display:swap; src:url(assets/fonts/bricolage-grotesque-latin-var.woff2) format('woff2'); unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+  @font-face{ font-family:'Hanken Grotesk'; font-style:normal; font-weight:400 600; font-display:swap; src:url(assets/fonts/hanken-grotesk-latin-var.woff2) format('woff2'); unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+  @font-face{ font-family:'JetBrains Mono'; font-style:normal; font-weight:400 500; font-display:swap; src:url(assets/fonts/jetbrains-mono-cyrillic-var.woff2) format('woff2'); unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116; }
+  @font-face{ font-family:'JetBrains Mono'; font-style:normal; font-weight:400 500; font-display:swap; src:url(assets/fonts/jetbrains-mono-latin-var.woff2) format('woff2'); unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+  @font-face{ font-family:'Onest'; font-style:normal; font-weight:600 800; font-display:swap; src:url(assets/fonts/onest-cyrillic-var.woff2) format('woff2'); unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116; }
+  @font-face{ font-family:'Onest'; font-style:normal; font-weight:600 800; font-display:swap; src:url(assets/fonts/onest-latin-var.woff2) format('woff2'); unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+</style>
+<style>
+  :root{
+    --bone:#ece2d0; --bone-2:#e3d6bf; --ink:#1b1714; --ink-2:#5c534a; --garnet:#9e2b45;
+    --line:rgba(27,23,20,.16);
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html{ -webkit-text-size-adjust:100%; }
+  body{
+    font-family:"Hanken Grotesk", system-ui, sans-serif; color:var(--ink); -webkit-font-smoothing:antialiased;
+    background:radial-gradient(120% 80% at 90% 0%, var(--bone-2), transparent 60%), var(--bone);
+    min-height:100dvh; overflow-x:clip;
+    padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  ::selection{ background:var(--garnet); color:#fff; }
+  :focus-visible{ outline:2px solid var(--garnet); outline-offset:3px; border-radius:8px; }
+  .grain{ position:fixed; inset:0; z-index:90; pointer-events:none; opacity:.05;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+
+  header{ display:flex; align-items:center; justify-content:space-between; gap:16px; padding:20px clamp(20px,5vw,48px); padding-top:calc(20px + env(safe-area-inset-top,0px)); }
+  .brand{ display:inline-flex; align-items:center; gap:12px; color:var(--ink); text-decoration:none; }
+  .brand img{ height:40px; width:auto; display:block; }
+  .brand span{ font-weight:500; font-size:15px; letter-spacing:.36em; text-transform:uppercase; padding-left:.36em; }
+  .back{ font-family:"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace; font-size:13px; color:var(--ink-2); text-decoration:none; min-height:44px; display:inline-flex; align-items:center; }
+  .back:hover{ color:var(--garnet); }
+
+  main{ max-width:720px; margin:0 auto; padding:clamp(16px,4vh,48px) clamp(20px,5vw,32px) 64px; }
+  .kick{ font-family:"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace; font-size:12px; letter-spacing:.22em; text-transform:uppercase; color:var(--garnet); margin-bottom:18px; }
+  h1{ font-family:"Bricolage Grotesque", "Onest", system-ui, sans-serif; font-weight:800; font-size:clamp(32px,7vw,52px); line-height:1.02; letter-spacing:-.03em; text-wrap:balance; }
+  .date{ margin-top:16px; font-family:"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace; font-size:13px; color:var(--ink-2); }
+  h2{ font-family:"Bricolage Grotesque", "Onest", system-ui, sans-serif; font-weight:700; font-size:clamp(20px,3.6vw,24px); line-height:1.2; letter-spacing:-.01em; margin:40px 0 12px; padding-top:22px; border-top:1px solid var(--line); }
+  p, li{ font-size:16.5px; line-height:1.65; color:var(--ink-2); }
+  p + p{ margin-top:10px; }
+  ul{ margin:8px 0 0; padding-left:22px; }
+  li + li{ margin-top:6px; }
+  b{ color:var(--ink); font-weight:600; }
+  a{ color:var(--garnet); text-underline-offset:3px; }
+  .card{ margin-top:28px; padding:20px 22px; border:1px solid var(--line); border-radius:18px; background:rgba(255,255,255,.35); }
+  .card p{ font-size:15.5px; }
+  footer{ max-width:720px; margin:0 auto; padding:0 clamp(20px,5vw,32px) 40px; font-family:"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace; font-size:12px; color:var(--ink-2); }
+  @media(max-width:560px){ p, li{ font-size:16px; } .card{ padding:16px 18px; } }
+</style>
+</head>
+<body>
+  <div class="grain" aria-hidden="true"></div>
+  <header>
+    <a class="brand" href="/" aria-label="Airium — на главную"><img src="/assets/logo/airium-mark.png" alt="" width="40" height="40" /><span>Airium</span></a>
+    <a class="back" href="/">← На главную</a>
+  </header>
+
+  <main>
+    <div class="kick">Документ</div>
+    <h1>Политика конфиденциальности</h1>
+    <p class="date">Редакция от 6 октября 2026 года</p>
+
+    <div class="card">
+      <p><b>Коротко:</b> на главной странице сайта мы ничего о вас не собираем: нет форм, cookies и счётчиков. Данные появляются, только если вы оставляете отзыв по личной ссылке или пишете нам в мессенджер. Используем их только для этого и удалим по первой просьбе.</p>
+    </div>
+
+    <h2>1. Кто обрабатывает данные</h2>
+    <p>Оператор персональных данных — <b>Селивёров Иван Андреевич</b> (веб-студия Airium).</p>
+    <p>По любым вопросам о ваших данных пишите на <a href="mailto:seliverovivan0@gmail.com">seliverovivan0@gmail.com</a>.</p>
+    <p>Политика действует для этого сайта, включая страницы отзывов, и составлена по Федеральному закону от 27.07.2006 № 152-ФЗ «О персональных данных».</p>
+
+    <h2>2. Какие данные мы получаем</h2>
+    <p><b>Если вы оставляете отзыв</b> по личной ссылке после сдачи проекта:</p>
+    <ul>
+      <li>имя, которое вы укажете;</li>
+      <li>должность или род деятельности, если укажете;</li>
+      <li>текст отзыва, оценку и выбранную аватарку (цвет или смайлик).</li>
+    </ul>
+    <p>Название проекта, адрес сайта и ваше имя для этой ссылки вносим мы сами, когда её создаём.</p>
+    <p><b>Для защиты от накрутки</b> мы на время до 10 минут сохраняем не сам IP-адрес, а его зашифрованный отпечаток, по которому IP восстановить нельзя.</p>
+    <p><b>Если вы пишете нам в Telegram или Max</b>, мы видим ваше имя, ник и то, что вы пишете. Переписка хранится в самом мессенджере, мы используем её только чтобы ответить и вести ваш проект.</p>
+
+    <h2>3. Зачем</h2>
+    <ul>
+      <li>опубликовать ваш отзыв на сайте, если вы на это согласились;</li>
+      <li>проверить отзыв перед публикацией;</li>
+      <li>защитить форму от спама и накрутки;</li>
+      <li>общаться с вами по проекту.</li>
+    </ul>
+    <p>Мы не используем данные для рекламы и рассылок и не продаём их.</p>
+
+    <h2>4. На каком основании</h2>
+    <p>Отзыв мы принимаем и публикуем только с вашего согласия: вы ставите галочку перед отправкой. Это согласие на обработку и на публикацию отзыва с вашим именем на нашем сайте (распространение персональных данных). Публикуем только то, что вы сами написали в форме, больше ничего.</p>
+    <p>Переписку в мессенджере мы ведём, потому что вы сами нам написали, чтобы обсудить или заказать сайт.</p>
+
+    <h2>5. Где хранятся данные и кому передаются</h2>
+    <p>Сайт размещён на хостинге Vercel Inc., отзывы хранятся в базе данных Upstash Inc. Это технические подрядчики: они хранят данные на своих серверах и не используют их в своих целях.</p>
+    <p>Больше мы никому ваши данные не передаём, кроме случаев, когда этого прямо требует закон.</p>
+
+    <h2>6. Сколько храним</h2>
+    <p>Отзыв храним, пока он нужен для сайта, или пока вы не попросите его удалить или не отзовёте согласие. После этого удаляем в течение 10 рабочих дней.</p>
+    <p>Неиспользованная ссылка на отзыв перестаёт работать через 30 дней.</p>
+
+    <h2>7. Ваши права</h2>
+    <p>Вы можете в любой момент:</p>
+    <ul>
+      <li>узнать, какие ваши данные у нас есть;</li>
+      <li>попросить исправить их;</li>
+      <li>попросить снять отзыв с сайта или удалить данные полностью;</li>
+      <li>отозвать согласие на обработку и публикацию.</li>
+    </ul>
+    <p>Для этого напишите на <a href="mailto:seliverovivan0@gmail.com">seliverovivan0@gmail.com</a> или нам в Telegram. Ответим в течение 10 рабочих дней. Если считаете, что мы нарушаем ваши права, можно обратиться в Роскомнадзор.</p>
+
+    <h2>8. Как мы защищаем данные</h2>
+    <p>Сайт работает только по защищённому соединению (HTTPS). Ссылки на отзыв личные и одноразовые. Доступ к базе отзывов есть только у нас троих, а на сайте видны только отзывы, которые мы проверили и одобрили.</p>
+
+    <h2>9. Cookies и аналитика</h2>
+    <p>Сайт не использует cookies, счётчики посещений и сервисы аналитики. Шрифты загружаются с нашего же сервера. Только библиотека анимаций загружается с открытого сервиса cdnjs (Cloudflare): как и любой сервер, он технически видит IP-адрес при загрузке файла, но мы эти данные не получаем.</p>
+
+    <h2>10. Изменения</h2>
+    <p>Если политика изменится, новая редакция появится на этой странице с новой датой.</p>
+  </main>
+
+  <footer>Airium © 2026 · <a href="/">На главную</a></footer>
+</body>
+</html>
