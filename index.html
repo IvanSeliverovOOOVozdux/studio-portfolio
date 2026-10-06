@@ -260,7 +260,7 @@
     position:absolute; top:54px; left:50%; transform:translateX(-50%); z-index:3;
     width:50px; height:2px; border-radius:2px; background:var(--garnet); opacity:.65;
   }
-  /* подсказка «крутите вниз»: одна на весь блок работ, прикреплена к низу экрана. Видна с самого начала сайта
+  /* подсказка «листайте вниз» (две стрелки): одна на весь блок работ, прикреплена к низу экрана. Видна с самого начала сайта
      (и при переходе по меню на «Работы» — там человек попадает на пустой фон), гаснет, когда начинает вылетать карточка; на остальных кейсах её нет */
   .scroll-hint{
     position:fixed; left:0; right:0; bottom:calc(28px + env(safe-area-inset-bottom)); z-index:40; width:max-content; margin:0 auto; pointer-events:none;
@@ -269,18 +269,11 @@
     transition:opacity .45s ease, transform .45s cubic-bezier(.2,.8,.2,1), visibility 0s linear .45s;
   }
   .scroll-hint.on{ opacity:.85; visibility:visible; transform:none; transition:opacity .45s ease, transform .45s cubic-bezier(.2,.8,.2,1), visibility 0s; }
-  .sh-mouse{ position:relative; width:26px; height:40px; border:2px solid currentColor; border-radius:14px; }
-  /* колёсико стоит на месте, как у настоящей мышки, а рубчики на нём бегут вниз — будто его крутят */
-  .sh-mouse i{
-    position:absolute; left:50%; top:6px; width:6px; height:11px; margin-left:-3px; border-radius:3px;
-    background:repeating-linear-gradient(to bottom, currentColor 0 2px, transparent 2px 4px);
-    background-size:100% 4px; animation:sh-wheel .5s linear infinite;
-    -webkit-mask:linear-gradient(to bottom, transparent, #000 30%, #000 70%, transparent); mask:linear-gradient(to bottom, transparent, #000 30%, #000 70%, transparent);
-  }
-  @keyframes sh-wheel{ to{ background-position:0 4px; } }
-  .sh-arrow{ width:14px; height:8px; animation:sh-arrow 1.5s ease-in-out infinite; }
-  @keyframes sh-arrow{ 0%{ transform:translateY(-3px); opacity:0; } 40%{ opacity:1; } 100%{ transform:translateY(5px); opacity:0; } }
-  .sh-chev{ display:none; }
+  /* две стрелки вниз, бегут по очереди (одинаково на компьютере и телефоне) */
+  .sh-chev{ display:flex; flex-direction:column; align-items:center; }
+  .sh-chev svg{ width:24px; height:13px; margin-top:-3px; animation:sh-chev 1.5s ease-in-out infinite; }
+  .sh-chev svg + svg{ animation-delay:.18s; }
+  @keyframes sh-chev{ 0%,100%{ transform:translateY(-3px); opacity:.25; } 45%{ transform:translateY(3px); opacity:1; } }
 
   .card-wrap{ position:relative; z-index:5; display:flex; align-items:center; justify-content:center; }
 
@@ -566,12 +559,6 @@
   .lite .site-head.solid{ background:rgba(236,226,208,.96); -webkit-backdrop-filter:none; backdrop-filter:none; }
   .lite .case-title, .lite .scene-label{ mix-blend-mode:normal; }                     /* контраст букв считается заранее (--inv-*), а не смешиванием каждый кадр */
   .lite .scene-label{ color:var(--inv-base); }
-  /* телефон: вместо мышки две стрелки вниз */
-  .lite .sh-mouse, .lite .sh-arrow{ display:none; }
-  .lite .sh-chev{ display:flex; flex-direction:column; align-items:center; }
-  .lite .sh-chev svg{ width:24px; height:13px; margin-top:-3px; animation:sh-chev 1.5s ease-in-out infinite; }
-  .lite .sh-chev svg + svg{ animation-delay:.18s; }
-  @keyframes sh-chev{ 0%,100%{ transform:translateY(-3px); opacity:.25; } 45%{ transform:translateY(3px); opacity:1; } }
   .lite .case-title{ color:var(--inv-base); }
   .lite .face{ box-shadow:0 18px 32px -18px rgba(27,23,20,.5), 0 0 0 1px rgba(27,23,20,.06); }
   .lite .fill{ clip-path:none; background:none; will-change:auto; }
@@ -697,7 +684,7 @@
 
   <!-- РАБОТЫ: 5 scroll-сцен генерируются из CASES в JS -->
   <div id="scenes" aria-label="Работы"></div>
-  <div class="scroll-hint" id="scrollHint" aria-hidden="true"><span class="sh-mouse"><i></i></span><svg class="sh-arrow" viewBox="0 0 14 8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5 7 6.5l5.5-5"/></svg><span class="sh-chev"><svg viewBox="0 0 22 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2l9 8 9-8"/></svg><svg viewBox="0 0 22 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2l9 8 9-8"/></svg></span></div>
+  <div class="scroll-hint" id="scrollHint" aria-hidden="true"><span class="sh-chev"><svg viewBox="0 0 22 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2l9 8 9-8"/></svg><svg viewBox="0 0 22 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2l9 8 9-8"/></svg></span></div>
 
   <!-- ПРОЦЕСС -->
   <section class="sec" id="about">
