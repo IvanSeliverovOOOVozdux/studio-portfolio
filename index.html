@@ -959,6 +959,14 @@
       const fill = scene.querySelector('.fill');
       const cardScale = scene.querySelector('.card-scale');
       const card3d = scene.querySelector('.card-3d');
+      /* Safari (iPhone) при перевороте прячет только саму лицевую сторону, а плашка и подпись поверх картинки (свои слои)
+         просвечивали на рубашке зеркально. Поэтому лицевую сторону прячем сами, пока карточка повёрнута к нам рубашкой */
+      const front = scene.querySelector('.face.front');
+      let frontShown = true;
+      function syncFaces(){
+        const f = Math.cos(gsap.getProperty(card3d, 'rotateX') * Math.PI / 180) >= 0;
+        if (f !== frontShown){ frontShown = f; front.style.visibility = f ? '' : 'hidden'; }
+      }
       const cardTilt = scene.querySelector('.card-tilt');
       const goPlate = scene.querySelector('.go-plate');
       const goLink = goPlate.querySelector('a');
@@ -1056,7 +1064,7 @@
          на телефоне путь прокрутки на кейс короче (+=260% вместо +=360%): пять кейсов не превращаются в бесконечный свайп */
       /* без pin: сцену держит CSS (position:sticky внутри .scene-track), ScrollTrigger только считает прогресс по прокрутке трека */
       const tl = gsap.timeline({ scrollTrigger:{ trigger:track, start:'top top', end:function(){ return '+=' + Math.max(1, track.offsetHeight - scene.offsetHeight); }, scrub:0.8, invalidateOnRefresh:true },
-        onUpdate: lite ? function(){ flipLetters(easeIO(Math.min(1, Math.max(0, (tl.time() - .15) / .67)))); } : null });
+        onUpdate: function(){ syncFaces(); if (lite) flipLetters(easeIO(Math.min(1, Math.max(0, (tl.time() - .15) / .67)))); } });
       tl.fromTo(cardScale, { autoAlpha:0 }, { autoAlpha:1, ease:'power1.out', duration:.08 }, 0);
       tl.fromTo(cardScale, { y:function(){ return -vh()*0.34; }, scale:.09 }, { y:0, scale:endScale, ease:'power2.out', duration:1 }, 0);
       tl.fromTo(card3d, { rotateX:0, rotateZ:0 }, { rotateX:2520, rotateZ:720, ease:'power2.out', duration:1 }, 0);
